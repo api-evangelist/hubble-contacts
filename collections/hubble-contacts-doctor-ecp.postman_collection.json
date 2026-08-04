@@ -1,0 +1,2214 @@
+{
+	"info": {
+		"_postman_id": "01520319-9d95-4b73-b316-50542b71e245",
+		"name": "Doctor_ECP",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Doctor Signup",
+			"item": [
+				{
+					"name": "Doctor email and password as null",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "doctor[email]",
+									"value": "NULL",
+									"type": "text"
+								},
+								{
+									"key": "doctor[password]",
+									"value": "NULL",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{baseURL}}api/v1/doctors/sign_up",
+							"host": [
+								"{{baseURL}}api"
+							],
+							"path": [
+								"v1",
+								"doctors",
+								"sign_up"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Doctor email and password as empty string",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "doctor[email]",
+									"value": "",
+									"type": "text"
+								},
+								{
+									"key": "doctor[password]",
+									"value": "",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{baseURL}}api/v1/doctors/sign_up",
+							"host": [
+								"{{baseURL}}api"
+							],
+							"path": [
+								"v1",
+								"doctors",
+								"sign_up"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Valid email and empty password",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.environment.set(\"docNewEmail\", pm.variables.replaceIn(\"{{$randomEmail}}\"));"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "doctor[email]",
+									"value": "{{docNewEmail}}",
+									"type": "text"
+								},
+								{
+									"key": "doctor[password]",
+									"value": "",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{baseURL}}api/v1/doctors/sign_up",
+							"host": [
+								"{{baseURL}}api"
+							],
+							"path": [
+								"v1",
+								"doctors",
+								"sign_up"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Doc Successful Signup",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.environment.set(\"docEmail\", pm.variables.replaceIn(\"{{$randomEmail}}\"));"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"verify statuscode\", function(){",
+									"",
+									"  pm.response.to.have.status(200);",
+									"",
+									"});",
+									"",
+									"pm.environment.set(\"signedUpDoc\", pm.environment.get(\"docEmail\"));"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "doctor[email]",
+									"value": "{{docEmail}}",
+									"type": "text"
+								},
+								{
+									"key": "doctor[password]",
+									"value": "{{docPass}}",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{baseURL}}api/v1/doctors/sign_up",
+							"host": [
+								"{{baseURL}}api"
+							],
+							"path": [
+								"v1",
+								"doctors",
+								"sign_up"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Doc Existing email Signup",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const res = pm.response.json();",
+									"",
+									"pm.test(\"verify duplicate email error\", function(){",
+									"",
+									"  pm.response.to.have.status(500);",
+									"  console.log(res.exception);",
+									"  pm.expect(res.exception).to.contain(\"duplicate key value violates unique constraint\");",
+									"",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "doctor[email]",
+									"value": "{{signedUpDoc}}",
+									"type": "text"
+								},
+								{
+									"key": "doctor[password]",
+									"value": "{{docPass}}",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{baseURL}}api/v1/doctors/sign_up",
+							"host": [
+								"{{baseURL}}api"
+							],
+							"path": [
+								"v1",
+								"doctors",
+								"sign_up"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Doctor Signin",
+			"item": [
+				{
+					"name": "Doctor sign in with wrong credentials (pass)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const res = pm.response.json();",
+									"",
+									"pm.test(\"verify status code and error msg\", function(){",
+									"  ",
+									"  pm.response.to.have.status(401);",
+									"  pm.expect(res.error).to.eql(\"Invalid Email or password.\");",
+									"",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "doctor[email]",
+									"value": "{{signedUpDoc}}",
+									"type": "text"
+								},
+								{
+									"key": "doctor[password]",
+									"value": "bob123",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{baseURL}}api/v1/doctors/sign_in",
+							"host": [
+								"{{baseURL}}api"
+							],
+							"path": [
+								"v1",
+								"doctors",
+								"sign_in"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Doctor sign in with wrong credentials (email)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const res = pm.response.json();",
+									"",
+									"pm.test(\"verify status code and error msg\", function(){",
+									"  ",
+									"  pm.response.to.have.status(401);",
+									"  pm.expect(res.error).to.eql(\"Invalid Email or password.\");",
+									"",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "doctor[email]",
+									"value": "bob@gmail.com",
+									"type": "text"
+								},
+								{
+									"key": "doctor[password]",
+									"value": "{{docPass}}",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{baseURL}}api/v1/doctors/sign_in",
+							"host": [
+								"{{baseURL}}api"
+							],
+							"path": [
+								"v1",
+								"doctors",
+								"sign_in"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Doctor sign in with NULL",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "doctor[email]",
+									"value": "NULL",
+									"type": "text"
+								},
+								{
+									"key": "doctor[password]",
+									"value": "NULL",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{baseURL}}api/v1/doctors/sign_in",
+							"host": [
+								"{{baseURL}}api"
+							],
+							"path": [
+								"v1",
+								"doctors",
+								"sign_in"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Doctor sign in with empty email and pass",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"",
+									"const res = pm.response.json();",
+									"",
+									"pm.test(\"verifying error msg\", function(){",
+									" ",
+									" pm.response.to.have.status(401);",
+									" pm.expect(res.error).to.contain(\"You need to sign in or sign up before continuing.\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "doctor[email]",
+									"value": "",
+									"type": "text"
+								},
+								{
+									"key": "doctor[password]",
+									"value": "",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{baseURL}}api/v1/doctors/sign_in",
+							"host": [
+								"{{baseURL}}api"
+							],
+							"path": [
+								"v1",
+								"doctors",
+								"sign_in"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Doc Successful Signin",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"",
+									"pm.test(\"verify status code to be 200\", function(){",
+									"  pm.response.to.have.status(200);",
+									"  console.log(pm.response.headers.get(\"Authorization\"));",
+									"});",
+									"",
+									"let token = pm.response.headers.get(\"Authorization\");",
+									"token = token.replace(\"Bearer \", \"\");",
+									"console.log(token);",
+									"pm.environment.set(\"Authorization_bearer_token\", token);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "doctor[email]",
+									"value": "{{docEmail}}",
+									"type": "text"
+								},
+								{
+									"key": "doctor[password]",
+									"value": "{{docPass}}",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{baseURL}}api/v1/doctors/sign_in",
+							"host": [
+								"{{baseURL}}api"
+							],
+							"path": [
+								"v1",
+								"doctors",
+								"sign_in"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Get Doctors",
+			"item": [
+				{
+					"name": "Get Doc Info",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"",
+									"const res = pm.response.json();",
+									"",
+									"console.log(res.doctor.id);",
+									"pm.environment.set(\"docId\", res.doctor.id);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{Authorization_bearer_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseURL}}api/v1/doctors/",
+							"host": [
+								"{{baseURL}}api"
+							],
+							"path": [
+								"v1",
+								"doctors",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Doc Info with wrong token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"verify unauthorized attempt to get doc info with wrong token\", function(){",
+									"",
+									"   pm.response.to.have.status(401);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "2837327r48bfdnbdsjhbjhdfb",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseURL}}api/v1/doctors/",
+							"host": [
+								"{{baseURL}}api"
+							],
+							"path": [
+								"v1",
+								"doctors",
+								""
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Customer Signup",
+			"item": [
+				{
+					"name": "Customer email and password as null",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "customer[email]",
+									"value": "NULL",
+									"type": "text"
+								},
+								{
+									"key": "customer[password]",
+									"value": "NULL",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{baseURL}}api/v1/customers/sign_up",
+							"host": [
+								"{{baseURL}}api"
+							],
+							"path": [
+								"v1",
+								"customers",
+								"sign_up"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Customer email and password as empty",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "customer[email]",
+									"value": "",
+									"type": "text"
+								},
+								{
+									"key": "customer[password]",
+									"value": "",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{baseURL}}api/v1/customers/sign_up",
+							"host": [
+								"{{baseURL}}api"
+							],
+							"path": [
+								"v1",
+								"customers",
+								"sign_up"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Valid email and empty password",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.environment.set(\"custNewEmail\", pm.variables.replaceIn(\"{{$randomEmail}}\"));"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "customer[email]",
+									"value": "{{custNewEmail}}",
+									"type": "text"
+								},
+								{
+									"key": "customer[password]",
+									"value": "",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{baseURL}}api/v1/customers/sign_up",
+							"host": [
+								"{{baseURL}}api"
+							],
+							"path": [
+								"v1",
+								"customers",
+								"sign_up"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Customer Successful Signup",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.environment.set(\"customerEmail\", pm.variables.replaceIn(\"{{$randomEmail}}\"));"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"verify successful customer sign up test\", function(){",
+									"",
+									"pm.response.to.have.status(200);",
+									"",
+									"});",
+									"",
+									"pm.environment.set(\"signedUpCustomer\", pm.environment.get(\"customerEmail\"));"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "customer[email]",
+									"value": "{{customerEmail}}",
+									"type": "text"
+								},
+								{
+									"key": "customer[password]",
+									"value": "{{customerPass}}",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{baseURL}}api/v1/customers/sign_up",
+							"host": [
+								"{{baseURL}}api"
+							],
+							"path": [
+								"v1",
+								"customers",
+								"sign_up"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Customer Existing email sign up",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"verify unsuccesful sign up attempt for existing customer email\", function(){",
+									"",
+									"    pm.response.to.have.status(500);",
+									"    const res = pm.response.json();",
+									"    pm.expect(res.exception).to.contain(\"ERROR:  duplicate key value violates unique constraint \");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "customer[email]",
+									"value": "{{signedUpCustomer}}",
+									"type": "text"
+								},
+								{
+									"key": "customer[password]",
+									"value": "{{customerPass}}",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{baseURL}}api/v1/customers/sign_up",
+							"host": [
+								"{{baseURL}}api"
+							],
+							"path": [
+								"v1",
+								"customers",
+								"sign_up"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Customer Signin",
+			"item": [
+				{
+					"name": "Customer Sign in with wrong credential (email)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"verify unsuccessful login attempt using wrong credentials\", function(){",
+									"",
+									"   pm.response.to.have.status(401);",
+									"   const res = pm.response.json();",
+									"   pm.expect(res.error).to.contain(\"Invalid Email or password.\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "customer[email]",
+									"value": "hj@yahoo.com",
+									"type": "text"
+								},
+								{
+									"key": "customer[password]",
+									"value": "{{customerPass}}",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{baseURL}}api/v1/customers/sign_in",
+							"host": [
+								"{{baseURL}}api"
+							],
+							"path": [
+								"v1",
+								"customers",
+								"sign_in"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Customer Sign in with wrong credentials (pass)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"verify unsuccessful login attempt using wrong credentials\", function(){",
+									"",
+									"   pm.response.to.have.status(401);",
+									"   const res = pm.response.json();",
+									"   pm.expect(res.error).to.contain(\"Invalid Email or password.\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "customer[email]",
+									"value": "{{signedUpCustomer}}",
+									"type": "text"
+								},
+								{
+									"key": "customer[password]",
+									"value": "ooooo",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{baseURL}}api/v1/customers/sign_in",
+							"host": [
+								"{{baseURL}}api"
+							],
+							"path": [
+								"v1",
+								"customers",
+								"sign_in"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Customer sing in with empty email and password",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"verifying unsuccessful sign in attempt with empty values\", function(){",
+									"    pm.response.to.have.status(401);",
+									"    ",
+									"",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "customer[email]",
+									"value": "",
+									"type": "text"
+								},
+								{
+									"key": "customer[password]",
+									"value": "",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{baseURL}}api/v1/customers/sign_in",
+							"host": [
+								"{{baseURL}}api"
+							],
+							"path": [
+								"v1",
+								"customers",
+								"sign_in"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Customer Sign in with NULL values",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "customer[email]",
+									"value": "NULL",
+									"type": "text"
+								},
+								{
+									"key": "customer[password]",
+									"value": "NULL",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{baseURL}}api/v1/customers/sign_in",
+							"host": [
+								"{{baseURL}}api"
+							],
+							"path": [
+								"v1",
+								"customers",
+								"sign_in"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Successful Customer Sign in",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"verify successful sign in status code\", function(){",
+									"",
+									"  pm.response.to.have.status(200);",
+									"  ",
+									"  let token = pm.response.headers.get(\"Authorization\");",
+									"  token = token.replace(\"Bearer \", \"\");",
+									"",
+									"  console.log(token);",
+									"",
+									"  pm.environment.set(\"Auth_token_customer\", token);",
+									"",
+									"});",
+									"",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "",
+								"value": "",
+								"type": "text",
+								"disabled": true
+							},
+							{
+								"key": "",
+								"value": "",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "customer[email]",
+									"value": "{{signedUpCustomer}}",
+									"type": "text"
+								},
+								{
+									"key": "customer[password]",
+									"value": "{{customerPass}}",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{baseURL}}api/v1/customers/sign_in",
+							"host": [
+								"{{baseURL}}api"
+							],
+							"path": [
+								"v1",
+								"customers",
+								"sign_in"
+							],
+							"query": [
+								{
+									"key": "",
+									"value": null,
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Get Customer",
+			"item": [
+				{
+					"name": "Get Customer info",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"",
+									"pm.environment.set(\"custId\", pm.response.json().customer.id);",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{Auth_token_customer}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseURL}}api/v1/customers",
+							"host": [
+								"{{baseURL}}api"
+							],
+							"path": [
+								"v1",
+								"customers"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get customer info with wrong token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"verify unauthorized status code for wrong token\", function(){",
+									"",
+									"   pm.response.to.have.status(401);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "00101912i923",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseURL}}api/v1/customers",
+							"host": [
+								"{{baseURL}}api"
+							],
+							"path": [
+								"v1",
+								"customers"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Get Product Info",
+			"item": [
+				{
+					"name": "Product Info",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const res = pm.response.json();",
+									"",
+									"let productId = res.data.productList.edges[0].node.id;",
+									"console.log(productId);",
+									"",
+									"let variantId = res.data.productList.edges[0].node.variants.edges[0].node.id;",
+									"console.log(variantId);",
+									"",
+									"pm.environment.set(\"prod_id\", productId);",
+									"pm.environment.set(\"var_id\", variantId);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "graphql",
+							"graphql": {
+								"query": "query getProductList {\n  productList(first: 5) {\n    edges {\n      node {\n        id\n        variants(first: 1){\n          edges {\n            node {\n              id\n            }\n          }\n        }\n        vendor\n      }\n    }\n  }\n}\n",
+								"variables": ""
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}graphql",
+							"host": [
+								"{{baseURL}}graphql"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get product info",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const len = pm.response.json().data.productList.edges.length;",
+									"",
+									"console.log(len);",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "graphql",
+							"graphql": {
+								"query": "query getProductList {\n  productList(first: 5) {\n    edges {\n      node {\n        id\n        discount\n        discountCode\n        price\n        productStatus\n        productType\n        sku\n        images\n        brand\n        tags\n        title\n        variants(first: 1) {\n          edges {\n            node {\n              id\n              axis\n              baseCurve\n              color\n              cylinder\n              cylinderPlusAxis\n              diameter\n              power\n              torics\n              upc\n              wvaProductNumber\n            }\n          }\n        }\n        vendor\n      }\n    }\n  }\n}\n",
+								"variables": ""
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}graphql",
+							"host": [
+								"{{baseURL}}graphql"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Customer Place Order",
+			"item": [
+				{
+					"name": "create shipping address with valid customer token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"verify successful shipping address creation\", function(){",
+									"",
+									"  const res = pm.response.json();",
+									"  let id = res.data.createShippingAddress.id;",
+									"  pm.environment.set(\"shippingId\", id);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{Auth_token_customer}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "graphql",
+							"graphql": {
+								"query": "mutation shippingAddress {\n   createShippingAddress(\n    input: {attributes: {\n      firstName: \"Ala\",\n      lastName: \"Sobhan\",\n      address1: \"1440 Wood Rd\",\n      address2: \"Apt 1G\",\n      city: \"Bronx\",\n      province: \"NY\",\n      zip: \"10462\"\n    }\n    }\n  ) {\n      id\n      firstName\n      lastName\n      address1\n      address2\n      city\n      province\n      zip\n  }\n \n}\n",
+								"variables": ""
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}graphql",
+							"host": [
+								"{{baseURL}}graphql"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Make an unsuccessful order",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"order successful creation verification\", function(){",
+									"",
+									"  pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"customer email verification for order\", function(){",
+									"  ",
+									"    const res = pm.response.json();",
+									"    console.log(res.data.createOrder.customer.email);",
+									"    pm.expect(res.data.createOrder.customer.email).to.be.eql(pm.environment.get(\"signedUpCustomer\").toLowerCase());",
+									"  ",
+									"});",
+									"",
+									"pm.test(\"doctor email verification for order\", function(){",
+									"  ",
+									"    const res = pm.response.json();",
+									"    console.log(res.data.createOrder.customer.email);",
+									"    pm.expect(res.data.createOrder.doctor.email).to.be.eql(pm.environment.get(\"signedUpDoc\").toLowerCase());",
+									"  ",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{Auth_token_customer}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "graphql",
+							"graphql": {
+								"query": "mutation Checkout {\n  createOrder(\n    input: {attributes: {shippingAddressId: \"{{shippingId}}\", orderType: \"SINGLE_PURCHASE\", doctorId: \"{{docId}}\", orderItems: [{productId: \"{{prod_id}}\", productVariantId: \"{{var_id}}\", quantity: -1}]}}\n  ) {\n    id\n    customer {\n      email\n      id\n    }\n    doctor {\n      email\n      id\n    }\n    orderType\n    orderItems {\n      id\n      quantity\n    }\n  }\n}\n",
+								"variables": ""
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}graphql",
+							"host": [
+								"{{baseURL}}graphql"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Make an order with different product id",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"non existent variant verification\", function(){",
+									"",
+									"const res = pm.response.json();",
+									"",
+									"pm.expect(res.errors[0].message).to.be.eql(\"Validation error: Variants should be exists for given product\");",
+									"",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{Auth_token_customer}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "graphql",
+							"graphql": {
+								"query": "mutation Checkout {\n  createOrder(\n    input: {attributes: {shippingAddressId: \"{{shippingId}}\", orderType: \"SINGLE_PURCHASE\", doctorId: \"{{docId}}\", orderItems: [{productId: 6, productVariantId: \"{{var_id}}\", quantity: 10}]}}\n  ) {\n    id\n    customer {\n      email\n      id\n    }\n    doctor {\n      email\n      id\n    }\n    orderType\n    orderItems {\n      id\n      quantity\n    }\n  }\n}\n",
+								"variables": ""
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}graphql",
+							"host": [
+								"{{baseURL}}graphql"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Make an order with non existent variant id",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"non existent variant verification\", function(){",
+									"",
+									"const res = pm.response.json();",
+									"",
+									"pm.expect(res.errors[0].message).to.be.eql(\"Validation error: Variants should be exists for given product\");",
+									"",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{Auth_token_customer}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "graphql",
+							"graphql": {
+								"query": "mutation Checkout {\n  createOrder(\n    input: {attributes: {shippingAddressId: \"{{shippingId}}\", orderType: \"SINGLE_PURCHASE\", doctorId: \"{{docId}}\", orderItems: [{productId: \"{{prod_id}}\", productVariantId: 3, quantity: 10}]}}\n  ) {\n    id\n    customer {\n      email\n      id\n    }\n    doctor {\n      email\n      id\n    }\n    orderType\n    orderItems {\n      id\n      quantity\n    }\n  }\n}\n",
+								"variables": ""
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}graphql",
+							"host": [
+								"{{baseURL}}graphql"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "create shipping address for unauthorized customer",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"verify unauth customer shipping address creation attempt\", function(){",
+									"",
+									"  const res = pm.response.json();",
+									"  pm.expect(res.errors[0].message).to.be.eql(\"Unauthorized\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "dfjsdhfgs2hj1jh3rghjdfhjvjh",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "graphql",
+							"graphql": {
+								"query": "mutation shippingAddress {\n   createShippingAddress(\n    input: {attributes: {\n      firstName: \"Ala\",\n      lastName: \"Sobhan\",\n      address1: \"1440 Wood Rd\",\n      address2: \"Apt 1G\",\n      city: \"Bronx\",\n      province: \"NY\",\n      zip: \"10462\"\n    }\n    }\n  ) {\n      address1\n  }\n \n}\n",
+								"variables": ""
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}graphql",
+							"host": [
+								"{{baseURL}}graphql"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Make an order with wrong bearer token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"",
+									"const res= pm.response.json();",
+									"",
+									"pm.test(\"verify unauthorized attempt\", function(){",
+									"",
+									"   console.log(res.errors[0].message);",
+									"   pm.expect(res.errors[0].message).to.be.eql(\"Unauthorized\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "fdhjgfkjghkdfghdkf",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"query\":\"mutation Checkout {\\n    createOrder(input: {attributes: {shippingAddressId: 1, orderType: \\\"SINGLE_PURCHASE\\\", doctorId: 1, orderItems: [{productId: 1, productVariantId: 1, quantity: 1}]} }) \\n    {\\n        id\\n    }\\n}\",\"variables\":{}}"
+						},
+						"url": {
+							"raw": "{{baseURL}}graphql",
+							"host": [
+								"{{baseURL}}graphql"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Make an order successfully with valid shipping id and product id, var id",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"order successful creation verification\", function(){",
+									"",
+									"  pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"customer email verification for order\", function(){",
+									"  ",
+									"    const res = pm.response.json();",
+									"    console.log(res.data.createOrder.customer.email);",
+									"    pm.expect(res.data.createOrder.customer.email).to.be.eql(pm.environment.get(\"signedUpCustomer\").toLowerCase());",
+									"  ",
+									"});",
+									"",
+									"pm.test(\"doctor email verification for order\", function(){",
+									"  ",
+									"    const res = pm.response.json();",
+									"    console.log(res.data.createOrder.customer.email);",
+									"    pm.expect(res.data.createOrder.doctor.email).to.be.eql(pm.environment.get(\"signedUpDoc\").toLowerCase());",
+									"  ",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.environment.set(\"pro_quantity\", _.random(1, 10));",
+									"console.log(pm.environment.get(\"pro_quantity\"));"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{Auth_token_customer}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "graphql",
+							"graphql": {
+								"query": "mutation Checkout {\n  createOrder(\n    input: {attributes: {shippingAddressId: \"{{shippingId}}\", orderType: \"SINGLE_PURCHASE\", doctorId: \"{{docId}}\", orderItems: [{productId: \"{{prod_id}}\", \n        productVariantId: \"{{var_id}}\", \n        quantity: {{pro_quantity}}\n        \n     } ]}}\n  ) {\n    id\n    customer {\n      email\n      id\n    }\n    doctor {\n      email\n      id\n    }\n    orderType\n    orderItems {\n      id\n      quantity\n    }\n  }\n}\n",
+								"variables": ""
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}graphql",
+							"host": [
+								"{{baseURL}}graphql"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Get Doctor Order Info",
+			"item": [
+				{
+					"name": "get doctor order info",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"",
+									"const res = pm.response.json().data.doctorOrders.edges[0].node;",
+									"",
+									"pm.test(\"order successful creation verification\", function(){",
+									"",
+									"  pm.response.to.have.status(200);",
+									"  pm.expect(pm.environment.get(\"docId\")).to.be.eql(res.doctor.id);",
+									"  pm.expect(pm.environment.get(\"custId\")).to.be.eql(res.customer.id);",
+									"  pm.expect(pm.environment.get(\"prod_id\")).to.be.eql(res.orderItems[0].product.id);",
+									"  pm.expect(pm.environment.get(\"pro_quantity\")).to.be.eql(res.orderItems[0].quantity);",
+									"});",
+									"",
+									"pm.test(\"verify shipping address is correct\", function(){",
+									"",
+									"   pm.expect(res.shippingAddress.firstName).to.be.eql(\"Ala\");  ",
+									"   pm.expect(res.shippingAddress.lastName).to.be.eql(\"Sobhan\"); ",
+									"   pm.expect(res.shippingAddress.address1).to.be.eql(\"1440 Wood Rd\"); ",
+									"   pm.expect(res.shippingAddress.city).to.be.eql(\"Bronx\");",
+									"   pm.expect(res.shippingAddress.province).to.be.eql(\"NY\");",
+									"   pm.expect(res.shippingAddress.zip).to.be.eql(\"10462\");",
+									"   pm.expect(res.shippingAddress.id).to.be.eql(pm.environment.get(\"shippingId\"));      ",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{Authorization_bearer_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "graphql",
+							"graphql": {
+								"query": "query DoctorHistory{\n  doctorOrders(last: 1){\n    edges {\n      node {\n       id\n        doctor {\n          id\n          email\n          firstName\n          lastName\n        }\n        customer {\n          id\n          email\n          firstName\n          lastName\n        }\n  \n        shippingAddress {\n         id\n         firstName\n         lastName\n         address1\n         address2\n         city\n         province\n         zip\n        }\n\n        orderItems {\n          id\n          quantity\n          product{\n              id\n              title\n          }\n        }\n\n        orderNumber\n        tags\n        orderStatus\n        fulfillmentStatus\n        financialStatus\n        orderType\n        totalPrice\n\n        closedAt\n        cancelledAt\n        createdAt\n        updatedAt\n\n        utmParams\n      }\n    }\n  }\n}\n",
+								"variables": ""
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}graphql",
+							"host": [
+								"{{baseURL}}graphql"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Get Customer Order Info",
+			"item": [
+				{
+					"name": "Get customer order info",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"",
+									"const res = pm.response.json().data.customerOrders.edges[0].node;",
+									"pm.test(\"order successful creation verification\", function(){",
+									"",
+									"  pm.response.to.have.status(200);",
+									"  pm.expect(pm.environment.get(\"custId\")).to.be.eql(res.customer.id);",
+									"  pm.expect(pm.environment.get(\"docId\")).to.be.eql(res.doctor.id);",
+									"  pm.expect(pm.environment.get(\"prod_id\")).to.be.eql(res.orderItems[0].product.id);",
+									"  pm.expect(pm.environment.get(\"pro_quantity\")).to.be.eql(res.orderItems[0].quantity);",
+									"   console.log(res.orderItems[0].quantity);",
+									"});",
+									"",
+									"pm.test(\"verify shipping address is correct\", function(){",
+									"",
+									"   pm.expect(res.shippingAddress.firstName).to.be.eql(\"Ala\");  ",
+									"   pm.expect(res.shippingAddress.lastName).to.be.eql(\"Sobhan\"); ",
+									"   pm.expect(res.shippingAddress.address1).to.be.eql(\"1440 Wood Rd\"); ",
+									"   pm.expect(res.shippingAddress.city).to.be.eql(\"Bronx\");",
+									"   pm.expect(res.shippingAddress.province).to.be.eql(\"NY\");",
+									"   pm.expect(res.shippingAddress.zip).to.be.eql(\"10462\");",
+									"   pm.expect(res.shippingAddress.id).to.be.eql(pm.environment.get(\"shippingId\"));      ",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{Auth_token_customer}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "graphql",
+							"graphql": {
+								"query": "query customerHistory{\n  customerOrders(last: 1){\n    edges{\n      node {\n       id\n        customer {\n          id\n          email\n          firstName\n          lastName\n        }\n        doctor {\n          id\n          email\n          firstName\n          lastName\n        }\n        shippingAddress {\n         id\n         firstName\n         lastName\n         address1\n         address2\n         city\n         province\n         zip\n        }\n\n        orderItems {\n          id\n          quantity\n          product{\n              id\n              title\n          }\n        }\n\n        orderNumber\n        tags\n        orderStatus\n        fulfillmentStatus\n        financialStatus\n        orderType\n        totalPrice\n\n        closedAt\n        cancelledAt\n        createdAt\n        updatedAt\n\n        utmParams\n      }\n    }\n  }\n}",
+								"variables": ""
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}graphql",
+							"host": [
+								"{{baseURL}}graphql"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Get Customer shipping address",
+			"item": [
+				{
+					"name": "get customer shipping info",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"verify customer shipping address\",function(){",
+									"",
+									"    const res = pm.response.json().data.customerShippingAddresses.edges[0].node;",
+									"    console.log(res);",
+									"    pm.expect(res).to.have.property(\"address1\").and.is.not.empty;",
+									"    pm.expect(res).to.have.property(\"firstName\").and.is.not.empty.and.is.eql(\"'Ala'\");",
+									"    pm.expect(res).to.have.property(\"lastName\").and.is.not.empty.and.is.eql(\"'Sobhan'\");",
+									"    pm.expect(res).to.have.property(\"province\").and.is.not.empty.and.is.eql(\"'NY'\");",
+									"    pm.expect(res).to.have.property(\"zip\").and.is.not.empty.and.is.eql(\"'10462'\");",
+									"    pm.expect(res).to.have.property(\"id\").and.is.eql(pm.environment.get(\"shippingId\"));",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{Auth_token_customer}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "graphql",
+							"graphql": {
+								"query": "query getCustomerShippingAdd{\n  \n  customerShippingAddresses(last: 1){\n    edges{\n      node{\n        address1\n        address2\n        country\n        countryCode\n        firstName\n        lastName\n        id\n        latitude\n        longitude\n        name\n        phone\n        province\n        provinceCode\n        zip\n      }\n    }\n  }\n}",
+								"variables": ""
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}graphql",
+							"host": [
+								"{{baseURL}}graphql"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Customer Signout",
+			"item": [
+				{
+					"name": "Customer successful sign out",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"verify successful sign out\", function(){",
+									"",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{Auth_token_customer}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseURL}}api/v1/customers/sign_out",
+							"host": [
+								"{{baseURL}}api"
+							],
+							"path": [
+								"v1",
+								"customers",
+								"sign_out"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Customer unsuccessful sign out after signing out",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"verify unsuccessful sign out after signing out\", function(){",
+									"",
+									"    pm.response.to.have.status(401);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{Auth_token_customer}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseURL}}api/v1/customers/sign_out",
+							"host": [
+								"{{baseURL}}api"
+							],
+							"path": [
+								"v1",
+								"customers",
+								"sign_out"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Customer unsuccessful sign out with wrong token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"verify unsuccessful sign out with wrong token\", function(){",
+									"",
+									"    pm.response.to.have.status(500);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "9cdsfvke8923r832",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseURL}}api/v1/customers/sign_out",
+							"host": [
+								"{{baseURL}}api"
+							],
+							"path": [
+								"v1",
+								"customers",
+								"sign_out"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Doctor Signout",
+			"item": [
+				{
+					"name": "Doc Successful Signout",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"verify successful logout status code\", function(){",
+									"",
+									"    pm.response.to.have.status(200);",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{Authorization_bearer_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseURL}}api/v1/doctors/sign_out",
+							"host": [
+								"{{baseURL}}api"
+							],
+							"path": [
+								"v1",
+								"doctors",
+								"sign_out"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Doc Unsuccessful Signout after signing out",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"verify unsuccessful signing status code after signing out\", function(){",
+									"",
+									"    pm.response.to.have.status(401);",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{Authorization_bearer_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseURL}}api/v1/doctors/sign_out",
+							"host": [
+								"{{baseURL}}api"
+							],
+							"path": [
+								"v1",
+								"doctors",
+								"sign_out"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Doc Unsuccessful Signout with wrong token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"verify unsuccessful logout status code\", function(){",
+									"",
+									"pm.response.to.have.status(500);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "hfgjhsdfg",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseURL}}api/v1/doctors/sign_out",
+							"host": [
+								"{{baseURL}}api"
+							],
+							"path": [
+								"v1",
+								"doctors",
+								"sign_out"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Doctor Connect Bank Account",
+			"item": [
+				{
+					"name": "Successfully connect bank account",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{Authorization_bearer_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseURL}}api/v1/doctors/connect_bank_account",
+							"host": [
+								"{{baseURL}}api"
+							],
+							"path": [
+								"v1",
+								"doctors",
+								"connect_bank_account"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}

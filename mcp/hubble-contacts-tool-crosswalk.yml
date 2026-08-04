@@ -1,0 +1,205 @@
+generated: '2026-08-04'
+method: derived
+source: mcp/hubble-contacts-mcp.yml + llms/hubble-contacts-agents.md + graphql/hubble-contacts-storefront.graphql
+notes: >-
+  Hubble Contacts publishes no OpenAPI, so the REST side of this crosswalk is not
+  operationIds but the unauthenticated storefront JSON endpoints Hubble's own
+  /agents.md documents under "Read-Only Browsing". Every row binds a UCP/MCP tool to
+  the REST path that exposes the nearest equivalent data. Live tools/list is gated
+  behind a registered UCP agent profile, so MCP bindings are by name and documented
+  semantics; confidence is set accordingly.
+
+  ROUND 2 CHANGED THIS DOCUMENT. A third surface was found: a live, anonymous,
+  fully introspectable Storefront GraphQL API on Hubble's own host. It carries real
+  cart mutations, so most of what round 1 filed as "MCP-only, no public equivalent"
+  is in fact reachable over GraphQL without a UCP agent profile at all — including
+  cart creation, line editing, delivery addresses and handoff to checkout. Only
+  payment completion and order lookup stay off the anonymous surface. GraphQL field
+  names below are read from the captured SDL, not guessed.
+surfaces:
+  openapi: null
+  openapi_note: No OpenAPI, Swagger or GraphQL SDL is published on any Hubble host.
+  rest:
+    base: https://account.hubblecontacts.com
+    documented_at: https://account.hubblecontacts.com/agents.md
+    auth: none
+    endpoints:
+    - GET /products.json
+    - GET /products/{handle}.json
+    - GET /collections/{handle}/products.json
+    - GET /collections/all
+    - GET /search?q={query}&type=product
+    - GET /sitemap.xml
+  mcp:
+    url: https://account.hubblecontacts.com/api/ucp/mcp
+    transport: http
+    tools_list: gated
+    gate: UCP agent profile required (invalid_profile_url, HTTP 422)
+  graphql:
+    url: https://account.hubblecontacts.com/api/2026-01/graphql.json
+    schema: ../graphql/hubble-contacts-storefront.graphql
+    introspection: open
+    auth: none
+    gated: false
+    query_fields: 35
+    mutation_fields: 41
+    note: >-
+      Shopify Storefront API served on Hubble's own host. Undocumented by Hubble —
+      it appears in neither /agents.md nor /llms.txt — but fully open.
+crosswalk:
+- tool: search_catalog
+  category: catalog
+  rest: ['GET /search?q={query}&type=product']
+  graphql: [search, predictiveSearch, 'products(query:)']
+  binding: rest+graphql
+  confidence: medium
+  note: >-
+    Three projections of one search core. REST returns storefront product JSON;
+    GraphQL search/predictiveSearch return typed connections with facets and
+    productFilters; the MCP tool returns UCP catalog results shaped by the negotiated
+    dev.shopify.catalog capability.
+- tool: lookup_catalog
+  category: catalog
+  rest: ['GET /products/{handle}.json']
+  graphql: [nodes, products]
+  binding: graphql
+  confidence: medium
+  note: >-
+    lookup_catalog is a batch identifier lookup. GraphQL nodes(ids:[ID!]!) is the true
+    batch equivalent — the REST path is per-handle and single-item only, so the earlier
+    REST-only mapping under-described this tool.
+- tool: get_product
+  category: catalog
+  rest: ['GET /products/{handle}.json']
+  graphql: [product, productByHandle]
+  binding: rest+graphql
+  confidence: high
+  note: >-
+    Same product entity on all three surfaces; REST and productByHandle are keyed by
+    handle, product() by id, MCP by UCP catalog identifier.
+- tool: create_cart
+  category: cart
+  rest: []
+  graphql: [cartCreate]
+  binding: graphql
+  confidence: high
+  note: >-
+    Round 1 filed this as MCP-only. The anonymous Storefront GraphQL surface exposes
+    cartCreate directly, so a cart can be built with no UCP agent profile.
+- tool: get_cart
+  category: cart
+  rest: []
+  graphql: [cart]
+  binding: graphql
+  confidence: high
+  note: 'Root query cart(id: ID!) returns the cart by its cart token.'
+- tool: update_cart
+  category: cart
+  rest: []
+  graphql: [cartLinesAdd, cartLinesUpdate, cartLinesRemove, cartAttributesUpdate, cartNoteUpdate, cartDiscountCodesUpdate, cartGiftCardCodesAdd, cartBuyerIdentityUpdate, cartMetafieldsSet]
+  binding: graphql
+  confidence: high
+  note: >-
+    One UCP tool fans out to nine granular GraphQL mutations; the GraphQL surface is
+    strictly finer-grained here than the MCP one.
+- tool: create_checkout
+  category: checkout
+  rest: []
+  graphql: [cartPrepareForCompletion, cartBillingAddressUpdate, cartDeliveryAddressesAdd]
+  binding: graphql
+  confidence: medium
+  note: >-
+    UCP models checkout as its own object; Storefront GraphQL has no Checkout type in
+    this version — the cart is promoted toward completion instead. Semantic match, not
+    a structural one.
+- tool: update_checkout
+  category: checkout
+  rest: []
+  graphql: [cartDeliveryAddressesUpdate, cartDeliveryAddressesReplace, cartSelectedDeliveryOptionsUpdate, cartPaymentUpdate]
+  binding: graphql
+  confidence: medium
+  note: Shipping address and delivery method selection map onto the cart delivery mutations.
+- tool: complete_checkout
+  category: checkout
+  rest: []
+  graphql: [cartSubmitForCompletion, cartCompletionAttempt, shopPayPaymentRequestSessionSubmit]
+  binding: graphql
+  confidence: medium
+  note: >-
+    cartSubmitForCompletion submits for payment and cartCompletionAttempt polls the
+    result. Both still require a payment method the buyer authorized — the human
+    approval invariant in Hubble's /agents.md is not bypassed by using GraphQL.
+mcp_only:
+- tool: cancel_cart
+  reason: >-
+    No cart-cancellation mutation exists on the Storefront GraphQL surface; carts are
+    abandoned rather than cancelled. UCP-only concept.
+- tool: get_checkout
+  reason: >-
+    No Checkout object exists in the Storefront GraphQL schema for this version, so
+    there is nothing to read back by checkout id.
+- tool: cancel_checkout
+  reason: Same — checkout is a UCP-level object with no GraphQL counterpart here.
+- tool: get_order
+  reason: >-
+    Order retrieval requires customer identity. The anonymous surfaces expose no
+    orders; Storefront GraphQL only reaches orders through customer(customerAccessToken:)
+    and Shopify has deprecated that path in favour of the Customer Account API.
+    Customer-scoped access runs through the OAuth/OIDC issuer captured in authentication/.
+graphql_only:
+- capability: content and merchandising
+  fields: [article, articles, blog, blogByHandle, blogs, page, pageByHandle, pages, menu, metaobject, metaobjects, urlRedirects, sitemap]
+  note: Editorial and navigation content no MCP tool or REST JSON path exposes.
+- capability: recommendations and taxonomy
+  fields: [productRecommendations, productTags, productTypes]
+- capability: localization and store context
+  fields: [localization, locations, paymentSettings, shop, shopPayInstallmentsPricing]
+  note: Country/currency/market context an agent needs before quoting a price.
+- capability: customer account management
+  fields: [customerCreate, customerAccessTokenCreate, customerAccessTokenRenew, customerAccessTokenDelete, customerUpdate, customerAddressCreate, customerAddressUpdate, customerAddressDelete, customerDefaultAddressUpdate, customerRecover, customerReset, customerActivate]
+  note: Twelve account mutations with no MCP or REST equivalent on this property.
+- capability: version introspection
+  fields: [publicApiVersions]
+  note: The only machine-readable version-support window Hubble serves.
+rest_only:
+- capability: bulk catalog listing
+  endpoints:
+  - GET /products.json
+  - GET /collections/{handle}/products.json
+  - GET /collections/all
+  note: >-
+    The anonymous REST surface can page the entire product list without a UCP agent
+    profile; the MCP catalog tools are search/lookup shaped and are gated.
+- capability: site structure
+  endpoints:
+  - GET /sitemap.xml
+  note: No MCP tool exposes store sitemap or URL structure.
+coverage:
+  tools_named: 13
+  tools_bound: 9
+  tools_bound_to_rest: 3
+  tools_bound_to_graphql: 9
+  mcp_only: 4
+  mcp_only_round1: 10
+  mcp_only_delta: >-
+    Six tools moved out of mcp_only once the GraphQL surface was found — every cart
+    tool plus the three checkout-progression tools. The MCP endpoint is the only gated
+    surface on this store, and it is not the only way to transact.
+  rest_endpoints_documented: 6
+  rest_endpoints_with_a_tool: 3
+  rest_only_capabilities: 2
+  graphql_query_fields: 35
+  graphql_mutation_fields: 41
+  graphql_only_capabilities: 5
+x-evidence:
+  fetched: '2026-08-04'
+  rest_probes:
+  - {url: 'https://account.hubblecontacts.com/products.json', http_status: 200, products: 30}
+  - {url: 'https://account.hubblecontacts.com/collections/all/products.json', http_status: 200}
+  - {url: 'https://account.hubblecontacts.com/products/classic-2-0.json', http_status: 200}
+  - {url: 'https://account.hubblecontacts.com/search?q=lenses&type=product', http_status: 200}
+  mcp_probe:
+  - {url: 'https://account.hubblecontacts.com/api/ucp/mcp', method: POST, http_status: 422, gated: true}
+  graphql_probes:
+  - {url: 'https://account.hubblecontacts.com/api/2026-01/graphql.json', method: POST, body: full introspection, http_status: 200, types: 416}
+  - {url: 'https://account.hubblecontacts.com/api/2026-01/graphql.json', method: POST, query: 'products(first:250)', http_status: 200, edges: 250}

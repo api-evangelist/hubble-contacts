@@ -1,23 +1,190 @@
 aid: hubble-contacts
 name: Hubble Contacts
-description: 'Hubble Contacts is a company surfaced via the API Evangelist harvest backlog (source: secondary-market)
-  and added to the network as a stub for full-pipeline profiling.'
+description: 'Hubble Contacts is a New York-based direct-to-consumer vision care brand
+  that sells prescription contact lenses, eyeglasses, sunglasses and eye care accessories
+  on a personalized subscription model, shipping daily, weekly and monthly lenses —
+  its own Classic, Hydro and SkyHy lines alongside third-party brands such as Acuvue,
+  Bausch + Lomb, Biotrue and DAILIES — direct to customers at prices it advertises
+  as up to 30% below comparable retail. Its public machine-readable surface is not a
+  developer API but an agent-commerce one: the storefront at account.hubblecontacts.com
+  publishes /llms.txt and /agents.md, a Universal Commerce Protocol (UCP) merchant
+  profile at /.well-known/ucp, an MCP endpoint at /api/ucp/mcp for agent-driven
+  catalog search, cart, checkout and order flows, OAuth 2.0 / OpenID Connect customer
+  account discovery documents, and unauthenticated read-only product and collection
+  JSON endpoints. Undocumented but wide open beside them sits the full Shopify
+  Storefront GraphQL API on the same host — 416 types, anonymous, introspectable, and
+  the only place the company''s subscription selling plans are modelled.'
+image: https://hubblecontacts.com/static/Hubble-Contacts-Homepage-Inset-Image-mobile.webp
 url: https://raw.githubusercontent.com/api-evangelist/hubble-contacts/refs/heads/main/apis.yml
 x-type: company
 x-source: harvest:secondary-market
-x-tier: stub
-x-tier-reason: harvest
 specificationVersion: '0.20'
 created: '2026-08-04'
 modified: '2026-08-04'
+x-enrichment:
+  date: '2026-08-04'
+  status: enriched
+  artifacts_added: 5
+  artifacts_updated: 10
+  artifacts_total: 25
+  pass: local-v1
+  round: 2
+  round_note: >-
+    Round 2 contract discovery found a live, anonymous, fully introspectable Shopify
+    Storefront GraphQL API on Hubble's own host at /api/{version}/graphql.json, which
+    round 1 had missed by probing /graphql on the wrong host, plus a first-party
+    Postman collection for an archived Doctor/ECP API in Hubble's GitHub org. No
+    OpenAPI, no A2A agent card, no AsyncAPI/webhooks, no SDKs, no security.txt and no
+    trust center exist on any Hubble host.
 tags:
 - Company
-apis: []
+- E-Commerce
+- Retail
+- Health
+- Vision Care
+- Contact Lenses
+- Subscriptions
+- Agentic Commerce
+- Model Context Protocol
+- Shopify
+- GraphQL
+apis:
+- aid: hubble-contacts-ucp-commerce
+  name: Hubble Contacts UCP Commerce (MCP)
+  description: 'Agent-facing commerce surface for the Hubble Contacts online store,
+    implementing the Universal Commerce Protocol (UCP) over MCP/JSON-RPC. Hubble''s
+    own /agents.md documents the flow: discover capabilities at /.well-known/ucp,
+    then call search_catalog, create_cart, create_checkout, update_checkout and
+    complete_checkout against the MCP endpoint. Checkout requires contemporaneous
+    buyer approval; the endpoint is rate limited per IP. tools/list is gated behind
+    a registered UCP agent profile, so live tool input schemas require an
+    authenticated agent identity. Served on Hubble''s host and provided natively by
+    the Shopify platform.'
+  humanURL: https://account.hubblecontacts.com/agents.md
+  baseURL: https://account.hubblecontacts.com/api/ucp/mcp
+  tags:
+  - Agentic Commerce
+  - Model Context Protocol
+  - Universal Commerce Protocol
+  - Checkout
+  - Catalog
+  properties:
+  - type: MCPServer
+    url: mcp/hubble-contacts-mcp.yml
+  - type: ToolCrosswalk
+    url: mcp/hubble-contacts-tool-crosswalk.yml
+  - type: LLMsTxt
+    url: llms/hubble-contacts-llms.txt
+- aid: hubble-contacts-storefront-json
+  name: Hubble Contacts Storefront Product JSON
+  description: 'Unauthenticated read-only JSON over the Hubble Contacts storefront
+    catalog, documented in Hubble''s own /agents.md for agents that only need to read
+    store data without transacting: /products.json for the full product list,
+    /products/{handle}.json for a single product, /collections/{handle}/products.json
+    for a collection, and /search?q={query}&type=product for search. Responses carry
+    products with variants, options, images, tags, vendor and pricing. Provided by
+    the Shopify platform on Hubble''s own host.'
+  humanURL: https://account.hubblecontacts.com/collections/all
+  baseURL: https://account.hubblecontacts.com
+  tags:
+  - Catalog
+  - Products
+  - E-Commerce
+  - Read Only
+  properties:
+  - type: DataModel
+    url: data-model/hubble-contacts-data-model.yml
+- aid: hubble-contacts-storefront-graphql
+  name: Hubble Contacts Storefront GraphQL API
+  description: 'The Shopify Storefront GraphQL API as served on Hubble Contacts'' own
+    host at /api/{version}/graphql.json. It answers unauthenticated: full introspection
+    and real data queries both return 200 with no storefront access token, and the
+    server labels the call storefront/query/anonymous. 416 types, 35 root queries and
+    41 mutations cover the catalog (products, prescription variants, options,
+    collections, price ranges, availability), subscription selling plans — which
+    appear on no other Hubble surface even though subscription is the company''s
+    business model — content (blogs, articles, pages, menus), localization and payment
+    settings, cart creation and line editing through to submission for completion, and
+    customer account management. Relay cursor pagination, a per-query cost budget in
+    extensions.cost plus shopify-complexity-score headers, 55 @deprecated fields with
+    machine-readable reasons, and a publicApiVersions query that reports its own
+    supported version window. Hubble links to none of it: it appears in neither
+    /agents.md, /llms.txt nor /.well-known/. Schema captured by live introspection.'
+  humanURL: https://shopify.dev/docs/api/storefront
+  baseURL: https://account.hubblecontacts.com/api/2026-01/graphql.json
+  tags:
+  - GraphQL
+  - Catalog
+  - Products
+  - Subscriptions
+  - Cart
+  - E-Commerce
+  properties:
+  - type: GraphQL
+    url: graphql/hubble-contacts-storefront.graphql
+  - type: GraphQLManifest
+    url: graphql/hubble-contacts-graphql.yml
+  - type: DataModel
+    url: data-model/hubble-contacts-data-model.yml
+  - type: AgentSkill
+    url: skills/hubble-contacts-graphql-storefront.md
 maintainers:
 - FN: Kin Lane
   email: kin@apievangelist.com
 - FN: APIs.json
   email: info@apis.io
 common:
+- type: DomainSecurity
+  url: security/hubble-contacts-domain-security.yml
 - type: Website
-  url: https://forgeglobal.com/hubble-contacts_stock/
+  url: https://www.hubblecontacts.com/
+- type: SignUp
+  url: https://account.hubblecontacts.com/
+- type: Pricing
+  url: https://www.hubblecontacts.com/contact-lenses/
+- type: TermsOfService
+  url: https://tos.hubblecontacts.com/
+- type: PrivacyPolicy
+  url: https://privacy.hubblecontacts.com/
+- type: Support
+  url: https://www.hubblecontacts.com/contact-us/
+- type: HelpCenter
+  url: https://www.hubblecontacts.com/faq/
+- type: Blog
+  url: https://www.hubblecontacts.com/blog/
+- type: GitHubOrganization
+  url: https://github.com/hubblecontacts
+- type: Accessibility
+  url: https://www.hubblecontacts.com/accessibility-statement/
+- type: Documentation
+  url: https://account.hubblecontacts.com/agents.md
+- type: LLMsTxt
+  url: llms/hubble-contacts-llms.txt
+- type: WellKnown
+  url: well-known/hubble-contacts-well-known.yml
+- type: MCPServer
+  url: mcp/hubble-contacts-mcp.yml
+- type: ToolCrosswalk
+  url: mcp/hubble-contacts-tool-crosswalk.yml
+- type: Authentication
+  url: authentication/hubble-contacts-authentication.yml
+- type: OAuthScopes
+  url: scopes/hubble-contacts-scopes.yml
+- type: Conformance
+  url: conformance/hubble-contacts-conformance.yml
+- type: ErrorCatalog
+  url: errors/hubble-contacts-problem-types.yml
+- type: Lifecycle
+  url: lifecycle/hubble-contacts-lifecycle.yml
+- type: Conventions
+  url: conventions/hubble-contacts-conventions.yml
+- type: DataModel
+  url: data-model/hubble-contacts-data-model.yml
+- type: AgentSkill
+  url: skills/_index.yml
+- type: GraphQL
+  url: graphql/hubble-contacts-storefront.graphql
+- type: Postman
+  url: collections/hubble-contacts-doctor-ecp.postman_collection.json
+- type: PostmanCollection
+  url: collections/hubble-contacts-collections.yml

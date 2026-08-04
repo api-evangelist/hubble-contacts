@@ -1,0 +1,184 @@
+generated: '2026-08-04'
+method: derived
+source: observed https://account.hubblecontacts.com/products.json + https://ucp.dev/2026-04-08/services/shopping/mcp.openrpc.json + graphql/hubble-contacts-storefront.graphql
+notes: >-
+  There is no OpenAPI to walk $refs through, so this entity graph is derived from
+  three real sources: the field set actually returned by the unauthenticated
+  storefront product JSON (probed 2026-08-04, 30 products), the result schema names
+  declared by the canonical UCP Shopping OpenRPC document that Hubble's own
+  /.well-known/ucp points at, and — added in round 2 — the live Storefront GraphQL
+  SDL captured by anonymous introspection. Field lists are exactly what was observed
+  or what the SDL declares; nothing is invented.
+
+  The GraphQL section is the authoritative entity graph for this property: it is
+  typed, it is complete, and it was read from the server rather than inferred from a
+  sample response.
+entities:
+- name: Product
+  surface: storefront-json
+  endpoint: GET /products.json, GET /products/{handle}.json
+  identifier: id
+  human_key: handle
+  fields: [id, title, handle, body_html, published_at, created_at, updated_at, vendor, product_type, tags, variants, images, options]
+  observed_count: 30
+- name: Variant
+  surface: storefront-json
+  identifier: id
+  parent: Product
+  fields: [id, product_id, title, option1, option2, option3, sku, requires_shipping, taxable, featured_image, available, price, grams, compare_at_price, position, created_at, updated_at]
+  note: >-
+    Product "Hubble 30 box" carried 54 variants at probe time (prescription power
+    combinations); most catalog products carry a single Default Title variant.
+- name: Option
+  surface: storefront-json
+  parent: Product
+  fields: [name, position, values]
+- name: Image
+  surface: storefront-json
+  parent: Product
+  fields: []
+  note: The images array was empty on the sampled product; field shape not observed.
+- name: Collection
+  surface: storefront-json
+  endpoint: GET /collections/{handle}/products.json
+  identifier: handle
+  note: Returns a products[] envelope; no collection metadata object is exposed on this path.
+- name: Cart
+  surface: ucp-mcp
+  schema: cart_result
+  operations: [create_cart, get_cart, update_cart, cancel_cart]
+  note: Schema fields are gated behind a UCP agent profile and were not observed.
+- name: Checkout
+  surface: ucp-mcp
+  schema: checkout_result
+  operations: [create_checkout, get_checkout, update_checkout, complete_checkout, cancel_checkout]
+- name: Order
+  surface: ucp-mcp
+  schema: order_result
+  operations: [get_order]
+- name: CatalogProduct
+  surface: ucp-mcp
+  schema: catalog_get_product_result
+  operations: [search_catalog, lookup_catalog, get_product]
+- name: Customer
+  surface: oauth-oidc
+  identifier: sub
+  fields: [iss, sub, aud, exp, iat, nonce, sid, email, email_verified]
+  source: well-known/hubble-contacts-openid-configuration.json
+  note: Claim set advertised by the Shopify customer accounts issuer for shop 15165228.
+relationships:
+- from: Product
+  to: Variant
+  kind: has_many
+  via: variants[].product_id
+- from: Variant
+  to: Product
+  kind: belongs_to
+  via: product_id
+- from: Product
+  to: Option
+  kind: has_many
+  via: options[]
+- from: Product
+  to: Image
+  kind: has_many
+  via: images[]
+- from: Collection
+  to: Product
+  kind: has_many
+  via: products[]
+- from: Cart
+  to: Variant
+  kind: has_many
+  via: line items referencing catalog variant identifiers
+  confidence: medium
+  note: Inferred from UCP cart semantics; line-item schema is gated.
+- from: Checkout
+  to: Cart
+  kind: has_one
+  via: UCP dev.ucp.shopping.checkout extends dev.ucp.shopping.cart
+- from: Order
+  to: Checkout
+  kind: belongs_to
+  via: complete_checkout places the order
+- from: Order
+  to: Customer
+  kind: belongs_to
+  via: authenticated customer account (customer-account-api:full)
+  confidence: medium
+graphql_entities:
+  source: graphql/hubble-contacts-storefront.graphql
+  api_version: '2026-01'
+  types_total: 416
+  note: >-
+    Types listed here were each verified present in the captured SDL. Product's field
+    list is quoted from the schema in full; other entities list their role rather than
+    every field, because the SDL beside this file is the complete reference.
+  entities:
+  - {name: Shop, role: store identity, brand, policies, payment settings}
+  - name: Product
+    role: catalog item
+    fields: [adjacentVariants, availableForSale, category, collections, compareAtPriceRange, createdAt, description, descriptionHtml, encodedVariantAvailability, encodedVariantExistence, featuredImage, handle, id, images, isGiftCard, media, metafield, metafields, onlineStoreUrl, options, priceRange, productType, publishedAt, requiresSellingPlan, selectedOrFirstAvailableVariant, sellingPlanGroups, seo, tags, title, totalInventory, trackingParameters, updatedAt, variantBySelectedOptions, variants, variantsCount, vendor]
+    note: >-
+      Far richer than the storefront JSON projection of the same object — the JSON has
+      no priceRange, sellingPlanGroups, metafields, seo, category or availability
+      encoding. Subscriptions (Hubble's core business model) are only modelled on this
+      surface, via sellingPlanGroups.
+  - {name: ProductVariant, role: purchasable SKU — prescription power combinations}
+  - {name: ProductOption, role: option axis (e.g. power, quantity)}
+  - {name: ProductOptionValue, role: option value}
+  - {name: Collection, role: merchandised product grouping with filters}
+  - {name: SellingPlanGroup, role: subscription plan family}
+  - {name: SellingPlan, role: individual subscription/delivery plan}
+  - {name: Cart, role: agent- or browser-built cart}
+  - {name: BaseCartLine, role: cart line interface}
+  - {name: CartLine, role: cart line item}
+  - {name: ComponentizableCartLine, role: bundle cart line}
+  - {name: CartDeliveryGroup, role: shipment grouping with delivery options}
+  - {name: Customer, role: customer account (customerAccessToken scoped)}
+  - {name: MailingAddress, role: shipping/billing address}
+  - {name: Order, role: placed order (customer-scoped only)}
+  - {name: OrderLineItem, role: order line}
+  - {name: Metafield, role: custom metadata on most entities}
+  - {name: Image, role: product/collection image}
+  - {name: MediaImage, role: media node}
+  - {name: Blog, role: content blog}
+  - {name: Article, role: content article}
+  - {name: Page, role: static content page}
+  - {name: Menu, role: navigation menu}
+  - {name: Location, role: store/pickup location}
+  - {name: Market, role: market/localization context}
+  - {name: MoneyV2, role: money value object}
+  - {name: Filter, role: search/collection facet}
+  relationships:
+  - {from: Shop, to: Collection, kind: has_many, via: 'QueryRoot.collections'}
+  - {from: Product, to: ProductVariant, kind: has_many, via: 'Product.variants'}
+  - {from: Product, to: ProductOption, kind: has_many, via: 'Product.options'}
+  - {from: Product, to: Collection, kind: has_many, via: 'Product.collections'}
+  - {from: Product, to: SellingPlanGroup, kind: has_many, via: 'Product.sellingPlanGroups'}
+  - {from: SellingPlanGroup, to: SellingPlan, kind: has_many, via: 'SellingPlanGroup.sellingPlans'}
+  - {from: Product, to: Image, kind: has_many, via: 'Product.images'}
+  - {from: Product, to: Metafield, kind: has_many, via: 'Product.metafields'}
+  - {from: Collection, to: Product, kind: has_many, via: 'Collection.products'}
+  - {from: Cart, to: BaseCartLine, kind: has_many, via: 'Cart.lines'}
+  - {from: CartLine, to: ProductVariant, kind: belongs_to, via: 'CartLine.merchandise'}
+  - {from: Cart, to: CartDeliveryGroup, kind: has_many, via: 'Cart.deliveryGroups'}
+  - {from: Cart, to: Customer, kind: has_one, via: 'Cart.buyerIdentity.customer'}
+  - {from: Customer, to: Order, kind: has_many, via: 'Customer.orders'}
+  - {from: Customer, to: MailingAddress, kind: has_many, via: 'Customer.addresses'}
+  - {from: Order, to: OrderLineItem, kind: has_many, via: 'Order.lineItems'}
+  - {from: Blog, to: Article, kind: has_many, via: 'Blog.articles'}
+identifier_conventions:
+- entity: Product
+  form: 64-bit integer (e.g. 8225396129992) plus a URL handle slug
+- entity: Variant
+  form: 64-bit integer
+- entity: 'GraphQL nodes'
+  form: 'global relay id, gid://shopify/<Type>/<numeric id> (observed: gid://shopify/Product/9071738436)'
+vendors_observed: [Hubble Contacts, 'Bausch & Lomb', hubble-dev]
+x-evidence:
+  fetched: '2026-08-04'
+  probes:
+  - {url: 'https://account.hubblecontacts.com/products.json', http_status: 200, products: 30}
+  - {url: 'https://account.hubblecontacts.com/products/classic-2-0.json', http_status: 200}
+  - {url: 'https://ucp.dev/2026-04-08/services/shopping/mcp.openrpc.json', http_status: 200}

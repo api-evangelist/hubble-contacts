@@ -1,0 +1,44 @@
+generated: '2026-08-04'
+method: probed
+source: live DNS/TLS/HTTP probes of apis.yml + OpenAPI hosts
+hosts:
+- host: www.hubblecontacts.com
+  https: true
+  tls_version: TLSv1.3
+  cert_expires: Jan 21 23:59:59 2027 GMT
+  hsts: null
+- host: account.hubblecontacts.com
+  https: true
+  tls_version: TLSv1.3
+  cert_expires: Oct 29 00:04:02 2026 GMT
+  hsts: true
+  hsts_max_age: 7889238
+  hsts_note: >-
+    The mechanical probe recorded null; a direct HEAD and GET of
+    https://account.hubblecontacts.com/ and /products.json both returned
+    "strict-transport-security: max-age=7889238" on 2026-08-04, so the value is
+    corrected here from direct observation. Note max-age is ~91 days, below the
+    31536000 (1 year) HSTS preload threshold, and no includeSubDomains or preload
+    directive is set.
+- host: api.hubblecontacts.com
+  https: true
+  probed: true
+  note: >-
+    Resolves and answers, but serves a Rails application shell with no discoverable
+    API contract; every spec and /.well-known/ path probed returned 404.
+domains:
+- domain: hubblecontacts.com
+  dnssec: false
+  caa: []
+  spf: true
+  dmarc: true
+  dmarc_policy: none
+  dmarc_note: >-
+    DMARC policy is p=none — monitoring only. Neither quarantine nor reject is
+    enforced, so spoofed mail from hubblecontacts.com is not rejected by receivers.
+gaps:
+- no CAA record on hubblecontacts.com
+- no DNSSEC on hubblecontacts.com
+- DMARC policy is p=none rather than quarantine or reject
+- no HSTS header on www.hubblecontacts.com (present only on the storefront host)
+- no /.well-known/security.txt on any host (see security/ vulnerability disclosure)

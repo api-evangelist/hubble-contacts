@@ -1,0 +1,72 @@
+generated: '2026-08-04'
+method: derived
+source: observed responses from https://account.hubblecontacts.com + https://account.hubblecontacts.com/agents.md
+format: jsonrpc-2.0
+format_note: >-
+  Hubble Contacts publishes no OpenAPI and no error reference page, so this catalog is
+  not derived from spec 4xx/5xx responses — it records error envelopes actually
+  observed on the two public surfaces, plus the one error condition Hubble's own
+  /agents.md documents (429 rate limiting). Responses are NOT RFC 9457
+  application/problem+json.
+envelopes:
+- surface: UCP Commerce MCP
+  endpoint: https://account.hubblecontacts.com/api/ucp/mcp
+  media_type: application/json
+  shape: JSON-RPC 2.0 error object
+  fields: [jsonrpc, id, 'error.code', 'error.message', 'error.data.code', 'error.data.content', 'error.data.continue_url']
+- surface: Storefront Product JSON
+  endpoint: https://account.hubblecontacts.com
+  media_type: text/html
+  shape: HTML error page (no machine-readable error body on 404)
+- surface: Storefront GraphQL
+  endpoint: 'https://account.hubblecontacts.com/api/{version}/graphql.json'
+  media_type: application/json
+  shape: GraphQL errors[] array returned with HTTP 200
+  fields: ['errors[].message', 'errors[].locations', 'errors[].path', 'errors[].extensions.code', 'errors[].extensions.typeName', 'errors[].extensions.fieldName']
+  mutation_shape: >-
+    Mutations return typed userErrors[] (CartUserError, CustomerUserError,
+    MetafieldsSetUserError and similar) inside data — a failed business operation is
+    still an HTTP 200 with an empty result field.
+problems:
+- status: 422
+  code: -32001
+  title: UCP discovery failed
+  detail_code: invalid_profile_url
+  detail: 'Unable to fetch agent profile: Missing profile uri'
+  surface: UCP Commerce MCP
+  observed: true
+  remediation: >-
+    Present a resolvable UCP agent profile URI when calling the MCP endpoint. Returned
+    for anonymous tools/list and initialize calls alike; the response carries a
+    continue_url of https://hubble-prod.myshopify.com/.
+- status: 429
+  title: Rate limited
+  surface: UCP Commerce MCP
+  observed: false
+  documented_at: https://account.hubblecontacts.com/agents.md
+  remediation: >-
+    Hubble's agent instructions state the MCP endpoint is rate limited per IP and that
+    agents must back off on 429 responses.
+- status: 404
+  title: Not found
+  surface: Storefront Product JSON
+  observed: true
+  remediation: >-
+    Returned as an HTML page, not JSON, for unknown handles and for unsupported
+    /.well-known/ paths. Agents should branch on HTTP status rather than parse the body.
+- status: 200
+  code: undefinedField
+  title: GraphQL validation error
+  detail: "Field 'nonexistentField' doesn't exist on type 'Shop'"
+  surface: Storefront GraphQL
+  observed: true
+  remediation: >-
+    GraphQL returns validation and execution failures with HTTP 200 and a populated
+    errors[] array; extensions.code carries the machine-readable reason
+    (undefinedField here). Agents must inspect the body, not the status line.
+x-evidence:
+  fetched: '2026-08-04'
+  probes:
+  - {url: 'https://account.hubblecontacts.com/api/ucp/mcp', method: POST, http_status: 422, jsonrpc_error: -32001}
+  - {url: 'https://account.hubblecontacts.com/.well-known/security.txt', http_status: 404, content_type: text/html}
+  - {url: 'https://account.hubblecontacts.com/api/2026-01/graphql.json', method: POST, query: '{shop{nonexistentField}}', http_status: 200, graphql_error_code: undefinedField}

@@ -1,0 +1,116 @@
+generated: '2026-08-04'
+method: searched
+source: well-known/ probes + https://account.hubblecontacts.com/agents.md + live GraphQL introspection
+notes: >-
+  Assertions are made only where a document was actually fetched. Hubble Contacts
+  publishes no OpenAPI, so spec-derived conformance is limited to what the discovery
+  documents and observed responses prove. Hubble publishes no compliance program of
+  its own (no trust center, no named certifications), so no Compliance pointer is
+  emitted.
+corrections:
+- id: graphql
+  was: false
+  now: true
+  reason: >-
+    Round 1 probed only https://api.hubblecontacts.com/graphql (404) and concluded no
+    GraphQL surface exists. Round 2 found a live, anonymous, fully introspectable
+    Shopify Storefront GraphQL API on Hubble's own storefront host at
+    /api/{version}/graphql.json. SDL captured at graphql/hubble-contacts-storefront.graphql.
+standards:
+- id: oauth2
+  conforms: true
+  evidence: >-
+    RFC 6749 authorization code flow advertised at
+    /.well-known/oauth-authorization-server (issuer
+    https://shopify.com/authentication/15165228).
+- id: rfc8414-oauth-authorization-server-metadata
+  conforms: true
+  evidence: '/.well-known/oauth-authorization-server returns 200 application/json.'
+- id: rfc9728-oauth-protected-resource-metadata
+  conforms: true
+  evidence: >-
+    /.well-known/oauth-protected-resource returns 200 naming resource
+    https://account.hubblecontacts.com and bearer_methods_supported [header].
+- id: oidc-discovery
+  conforms: true
+  evidence: >-
+    /.well-known/openid-configuration returns 200 with issuer, jwks_uri,
+    id_token_signing_alg_values_supported [RS256] and claims_supported.
+- id: rfc7636-pkce
+  conforms: true
+  evidence: 'code_challenge_methods_supported: [S256] in the discovery document.'
+- id: ucp-2026-04-08
+  conforms: true
+  evidence: >-
+    /.well-known/ucp declares Universal Commerce Protocol version 2026-04-08 (and
+    2026-01-23) with dev.ucp.shopping services over MCP transport.
+- id: model-context-protocol
+  conforms: true
+  evidence: >-
+    JSON-RPC 2.0 MCP endpoint at /api/ucp/mcp; anonymous tools/list returns a
+    well-formed JSON-RPC error object (code -32001).
+- id: llmstxt
+  conforms: true
+  evidence: 'https://account.hubblecontacts.com/llms.txt returns 200 text/plain.'
+- id: agents-md
+  conforms: true
+  evidence: 'https://account.hubblecontacts.com/agents.md returns 200 text/markdown.'
+- id: rfc8615-well-known-uris
+  conforms: true
+  evidence: 'Four /.well-known/ documents served on the storefront host.'
+- id: a2a-agent-card
+  conforms: false
+  evidence: >-
+    /.well-known/agent-card.json and /.well-known/agent.json return 404 on
+    www.hubblecontacts.com, account.hubblecontacts.com and api.hubblecontacts.com.
+- id: rfc9116-security-txt
+  conforms: false
+  evidence: '/.well-known/security.txt returns 404 on every probed host.'
+- id: rfc9457-problem-details
+  conforms: false
+  evidence: >-
+    No application/problem+json responses observed; the MCP surface uses JSON-RPC
+    error objects and the storefront returns HTML 404 pages.
+- id: openapi
+  conforms: false
+  evidence: >-
+    No OpenAPI/Swagger document found at any probed path on
+    www.hubblecontacts.com, api.hubblecontacts.com, account.hubblecontacts.com or
+    hubble-prod.myshopify.com.
+- id: asyncapi
+  conforms: false
+  evidence: No event, streaming or webhook surface is published.
+- id: graphql
+  conforms: true
+  evidence: >-
+    POST https://account.hubblecontacts.com/api/2026-01/graphql.json returns 200 to an
+    unauthenticated full introspection query (759,244 bytes, 416 types, QueryRoot +
+    Mutation), and to real data queries — shop { name } returned "Hubble Contacts". The
+    same endpoint answers on 2025-01, 2026-01 and unstable, and on
+    hubble-prod.myshopify.com. Note /graphql on api.hubblecontacts.com is still 404;
+    the surface lives on the storefront host under /api/{version}/graphql.json.
+- id: graphql-introspection
+  conforms: true
+  evidence: >-
+    Introspection is enabled and unauthenticated; SDL printed from the live response
+    to graphql/hubble-contacts-storefront.graphql.
+- id: graphql-cursor-connections
+  conforms: true
+  evidence: >-
+    Root collection fields expose the Relay Cursor Connections shape (edges/node/cursor
+    + pageInfo.hasNextPage/endCursor) with first/last/after/before arguments;
+    products(first:250) returned 250 edges.
+- id: postman-collection-v2.1
+  conforms: true
+  evidence: >-
+    https://github.com/hubblecontacts/Doctor_ECP_API_Tests publishes a Postman
+    Collection v2.1.0 (43 requests) declaring
+    schema.getpostman.com/json/collection/v2.1.0/collection.json. It targets a
+    localhost baseURL and a non-public Doctor/ECP API; captured at
+    collections/hubble-contacts-doctor-ecp.postman_collection.json.
+- id: rfc9110-api-catalog
+  conforms: false
+  evidence: '/.well-known/api-catalog returns 404 on every probed host.'
+x-evidence:
+  fetched: '2026-08-04'
+  method: direct HTTP probes; every status recorded as observed

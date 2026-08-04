@@ -1,0 +1,125 @@
+generated: '2026-08-04'
+method: searched
+source: https://account.hubblecontacts.com/.well-known/
+notes: >-
+  Probed every host in apis.yml plus www.hubblecontacts.com, api.hubblecontacts.com
+  and hubble-prod.myshopify.com. Only the Shopify-backed storefront host
+  (account.hubblecontacts.com) serves a /.well-known/ discovery surface; the
+  marketing site (www.hubblecontacts.com) and api.hubblecontacts.com return 404 for
+  every probed path. No security.txt and no A2A agent card were found on any host.
+hosts:
+- host: https://account.hubblecontacts.com
+  documents:
+  - path: /.well-known/ucp
+    status: 200
+    content_type: application/json
+    file: hubble-contacts-ucp.json
+    standard: Universal Commerce Protocol 2026-04-08
+  - path: /.well-known/openid-configuration
+    status: 200
+    content_type: application/json
+    file: hubble-contacts-openid-configuration.json
+    standard: OpenID Connect Discovery 1.0
+  - path: /.well-known/oauth-authorization-server
+    status: 200
+    content_type: application/json
+    file: hubble-contacts-oauth-authorization-server.json
+    standard: RFC 8414
+  - path: /.well-known/oauth-protected-resource
+    status: 200
+    content_type: application/json
+    file: hubble-contacts-oauth-protected-resource.json
+    standard: RFC 9728
+  - path: /.well-known/security.txt
+    status: 404
+  - path: /.well-known/agent-card.json
+    status: 404
+  - path: /.well-known/agent.json
+    status: 404
+  - path: /.well-known/api-catalog
+    status: 404
+  - path: /.well-known/ai-plugin.json
+    status: 404
+  - path: /.well-known/apple-app-site-association
+    status: 200
+    content_type: application/json
+    saved: false
+    note: >-
+      Empty Shopify default ({"applinks":{"apps":[],"details":[]},...}) — no universal
+      link routing declared. Recorded for completeness; not an API discovery document.
+  - path: /.well-known/mcp
+    status: 404
+  - path: /.well-known/oauth-protected-resource/api/ucp/mcp
+    status: 404
+    note: RFC 9728 per-resource path variant; only the root form is served.
+  - path: /.well-known/ai.txt
+    status: 404
+  - path: /.well-known/change-password
+    status: 404
+- host: https://www.hubblecontacts.com
+  documents:
+  - path: /.well-known/security.txt
+    status: 404
+  - path: /.well-known/openid-configuration
+    status: 404
+  - path: /.well-known/oauth-authorization-server
+    status: 404
+  - path: /.well-known/api-catalog
+    status: 404
+  - path: /.well-known/ai-plugin.json
+    status: 404
+  - path: /.well-known/agent-card.json
+    status: 404
+  - path: /.well-known/agent.json
+    status: 404
+- host: https://api.hubblecontacts.com
+  documents:
+  - path: /.well-known/security.txt
+    status: 404
+  - path: /.well-known/openid-configuration
+    status: 404
+  - path: /.well-known/oauth-authorization-server
+    status: 404
+  - path: /.well-known/api-catalog
+    status: 404
+  - path: /.well-known/agent-card.json
+    status: 404
+  - path: /.well-known/agent.json
+    status: 404
+- host: https://hubble-prod.myshopify.com
+  documents:
+  - path: /.well-known/ucp
+    status: 200
+    content_type: application/json
+    note: Same UCP profile as the custom-domain host; the myshopify origin behind it.
+  - path: /.well-known/agent-card.json
+    status: 404
+adjacent:
+- path: /llms.txt
+  host: https://account.hubblecontacts.com
+  status: 200
+  file: ../llms/hubble-contacts-llms.txt
+- path: /agents.md
+  host: https://account.hubblecontacts.com
+  status: 200
+  file: ../llms/hubble-contacts-agents.md
+- path: '/api/{version}/graphql.json'
+  host: https://account.hubblecontacts.com
+  status: 200
+  file: ../graphql/hubble-contacts-storefront.graphql
+  note: >-
+    Not a /.well-known/ path, but the largest discovery surface on the property — an
+    anonymous, introspectable Storefront GraphQL endpoint found in round 2. Nothing in
+    /.well-known/, /llms.txt or /agents.md points at it.
+- path: /llms.txt
+  host: https://www.hubblecontacts.com
+  status: 404
+  note: The marketing host publishes no agent surface at all; everything lives on the storefront host.
+x-evidence:
+  fetched: '2026-08-04'
+  probe: curl HTTP GET, status codes recorded as observed
+  round: 2
+  round2_note: >-
+    Re-probed every host including hubble-prod.myshopify.com. No agent card exists on
+    any host under either the canonical /.well-known/agent-card.json or the legacy
+    /.well-known/agent.json path, so no a2a/ artifact is written for this provider.

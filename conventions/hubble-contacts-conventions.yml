@@ -1,0 +1,99 @@
+generated: '2026-08-04'
+method: searched
+source: https://account.hubblecontacts.com/agents.md + observed response headers
+notes: >-
+  Cross-cutting semantics for the two public Hubble Contacts surfaces. Everything here
+  is either stated in Hubble's own agent instructions or observed on the wire; nothing
+  is inferred from a spec, because no OpenAPI is published. Notably there is NO
+  documented idempotency contract on either surface, so no Idempotency pointer is
+  emitted for this provider.
+authentication:
+  storefront_json: none
+  storefront_graphql: >-
+    none observed — the endpoint answered introspection and data queries with no
+    X-Shopify-Storefront-Access-Token; customer-scoped fields need a
+    customerAccessToken issued by customerAccessTokenCreate
+  ucp_mcp: UCP agent profile URI required; customer-scoped access via Shopify customer accounts OAuth/OIDC
+  see: authentication/hubble-contacts-authentication.yml
+idempotency:
+  supported: false
+  header: null
+  evidence: >-
+    Neither /agents.md nor /llms.txt documents an idempotency key, and the UCP Shopping
+    OpenRPC methods the store points at declare no idempotency parameter. Retry safety
+    on checkout rests on the cart/checkout id returned by create_cart / create_checkout
+    rather than on a client-supplied key.
+pagination:
+  storefront_json:
+    style: page-number
+    params: [page, limit]
+    note: >-
+      Shopify storefront product JSON convention. /products.json returned 30 products
+      in a single response at probe time; no Link header or cursor was present.
+  ucp_mcp:
+    style: unknown
+    note: Live tool input schemas are gated; pagination shape was not observed.
+  storefront_graphql:
+    style: relay-cursor-connections
+    params: [first, last, after, before]
+    response_fields: [edges, node, cursor, 'pageInfo.hasNextPage', 'pageInfo.hasPreviousPage', 'pageInfo.startCursor', 'pageInfo.endCursor']
+    max_page_size: 250
+    observed: 'products(first:250) returned 250 edges'
+    see: ../graphql/hubble-contacts-graphql.yml
+field_expansion:
+  supported: false
+metadata:
+  supported: false
+request_tracing:
+  header: x-request-id
+  observed: true
+  example_shape: uuid + '-' + unix timestamp
+  additional:
+  - header: server-timing
+    note: Carries processing/db durations, edge POP, country and a duplicate requestID.
+versioning:
+  style: date-versioned protocol negotiation (UCP)
+  see: lifecycle/hubble-contacts-lifecycle.yml
+error_envelope:
+  ucp_mcp: JSON-RPC 2.0 error object with error.data.code / error.data.content
+  storefront_json: HTML error page (no machine-readable body)
+  storefront_graphql: >-
+    GraphQL errors[] with message/locations/path and a typed extensions.code
+    (e.g. undefinedField); mutations additionally return typed userErrors[] payloads
+    inside data rather than failing the HTTP request.
+  see: errors/hubble-contacts-problem-types.yml
+  note: >-
+    Three surfaces, three different error shapes, none of them RFC 9457. An agent has
+    to branch per surface.
+rate_limiting:
+  documented: true
+  documented_at: https://account.hubblecontacts.com/agents.md
+  statement: The MCP endpoint is rate-limited per IP; agents are instructed to back off on 429.
+  headers_observed: [shopify-complexity-score, shopify-complexity-score-v2]
+  headers_note: >-
+    Found in round 2 on the Storefront GraphQL surface only: every response carries
+    shopify-complexity-score and shopify-complexity-score-v2, and the JSON body carries
+    extensions.cost.requestedQueryCost. That is a real, machine-readable cost signal an
+    agent can budget against ({shop{name}} = 1 / v2 8; products(first:250) = 23 / v2 78).
+    The storefront JSON and MCP surfaces still expose no X-RateLimit-* or Retry-After
+    headers.
+  storefront_json: no rate-limit headers observed
+  ucp_mcp: no rate-limit headers observed; per-IP limit stated in prose only
+buyer_context:
+  required_hints: [context.address_country, context.currency]
+  note: Hubble's agent instructions ask agents to pass these for accurate pricing and availability.
+human_in_the_loop:
+  checkout_requires_buyer_approval: true
+  statement: >-
+    "Agents must not complete payment without explicit buyer consent." Agents that
+    cannot obtain contemporaneous approval are directed to route the purchase through
+    the Shop skill (https://shop.app/SKILL.md) and Shop Pay.
+transport:
+  tls: TLSv1.3 observed
+  hsts: 'strict-transport-security: max-age=7889238 observed on the storefront host'
+  cdn: Cloudflare
+x-evidence:
+  fetched: '2026-08-04'
+  probes:
+  - {url: 'https://account.hubblecontacts.com/products.json', http_status: 200, headers: [x-request-id, server-timing, strict-transport-security]}
+  - {url: 'https://account.hubblecontacts.com/agents.md', http_status: 200}

@@ -1,0 +1,77 @@
+generated: '2026-08-04'
+method: generated
+source: https://account.hubblecontacts.com/agents.md
+notes: >-
+  Hubble Contacts publishes no OpenAPI, so these skills are grounded in the surfaces
+  that actually answer. The first two are grounded in what the provider documents
+  itself in /agents.md and /llms.txt: the unauthenticated storefront JSON endpoints
+  and the UCP/MCP commerce endpoint — every tool name, endpoint path and rule there is
+  quoted from Hubble's own agent instructions or the canonical UCP Shopping OpenRPC
+  document its /.well-known/ucp points at. The third was added in round 2 and is
+  grounded in the live Storefront GraphQL SDL captured by anonymous introspection;
+  every field name in it was verified present in that SDL. No operation is invented.
+skills:
+- file: hubble-contacts-browse-catalog.md
+  name: Browse the Hubble Contacts catalog without authenticating
+  api: https://account.hubblecontacts.com
+  auth: none
+  operations:
+  - GET /products.json
+  - GET /products/{handle}.json
+  - GET /collections/{handle}/products.json
+  - GET /collections/all
+  - GET /search?q={query}&type=product
+  - GET /sitemap.xml
+- file: hubble-contacts-agent-checkout.md
+  name: Buy from Hubble Contacts as an agent over UCP/MCP
+  api: https://account.hubblecontacts.com/api/ucp/mcp
+  auth: UCP agent profile required; buyer approval required at payment
+  operations:
+  - search_catalog
+  - lookup_catalog
+  - get_product
+  - create_cart
+  - get_cart
+  - update_cart
+  - create_checkout
+  - update_checkout
+  - complete_checkout
+  - get_order
+- file: hubble-contacts-graphql-storefront.md
+  name: Query the Hubble Contacts storefront over GraphQL
+  api: https://account.hubblecontacts.com/api/2026-01/graphql.json
+  auth: none
+  grounded_in: graphql/hubble-contacts-storefront.graphql
+  operations:
+  - query products
+  - query product
+  - query productByHandle
+  - query collection
+  - query collections
+  - query search
+  - query predictiveSearch
+  - query productRecommendations
+  - query shop
+  - query localization
+  - query paymentSettings
+  - query cart
+  - query publicApiVersions
+  - mutation cartCreate
+  - mutation cartLinesAdd
+  - mutation cartLinesUpdate
+  - mutation cartLinesRemove
+  - mutation cartBuyerIdentityUpdate
+  - mutation cartDeliveryAddressesAdd
+  - mutation cartSelectedDeliveryOptionsUpdate
+  - mutation cartPrepareForCompletion
+  - mutation cartSubmitForCompletion
+provider_published_skills:
+  found: false
+  probed:
+  - {url: 'https://www.hubblecontacts.com/agents.md', http_status: 404}
+  - {url: 'https://account.hubblecontacts.com/agents.md', http_status: 200, kind: agent-instructions-not-skill}
+  note: >-
+    Hubble's /agents.md is agent instructions, saved verbatim at
+    llms/hubble-contacts-agents.md. It is not a packaged skill file. Hubble's
+    instructions point agents at a third-party skill, https://shop.app/SKILL.md,
+    which is Shopify's, not Hubble's, and is not vendored here.

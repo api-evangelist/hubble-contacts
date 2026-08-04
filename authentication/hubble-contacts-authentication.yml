@@ -1,0 +1,110 @@
+generated: '2026-08-04'
+method: searched
+source: https://account.hubblecontacts.com/.well-known/openid-configuration
+docs: https://account.hubblecontacts.com/agents.md
+notes: >-
+  Hubble Contacts publishes no OpenAPI, so this profile is not derived from
+  securitySchemes — it is read directly from the OAuth 2.0 / OpenID Connect discovery
+  documents the storefront host serves, plus the observed auth behaviour of the two
+  public surfaces. The authorization server is the Shopify customer accounts issuer
+  bound to Hubble's shop id 15165228; the protected resource is Hubble's own host.
+summary:
+  types: [oauth2, openIdConnect, http, none]
+  oauth2_flows: [authorizationCode]
+  pkce: [S256]
+  bearer_methods: [header]
+  api_key_in: []
+schemes:
+- name: shopify-customer-accounts-oidc
+  type: openIdConnect
+  openIdConnectUrl: https://account.hubblecontacts.com/.well-known/openid-configuration
+  issuer: https://shopify.com/authentication/15165228
+  authorization_endpoint: https://shopify.com/authentication/15165228/oauth/authorize
+  token_endpoint: https://shopify.com/authentication/15165228/oauth/token
+  end_session_endpoint: https://shopify.com/authentication/15165228/logout
+  jwks_uri: https://shopify.com/authentication/15165228/.well-known/jwks.json
+  response_types_supported: [code]
+  grant_types_supported:
+  - authorization_code
+  - refresh_token
+  - 'urn:ietf:params:oauth:grant-type:jwt-bearer'
+  token_endpoint_auth_methods_supported: [client_secret_basic]
+  code_challenge_methods_supported: [S256]
+  id_token_signing_alg_values_supported: [RS256]
+  subject_types_supported: [public]
+  claims_supported: [iss, sub, aud, exp, iat, nonce, sid, email, email_verified]
+  scopes_supported:
+  - openid
+  - email
+  - 'customer-account-api:full'
+  - 'customer-account-mcp-api:full'
+  applies_to: Customer account access (order history, subscription management)
+  source: well-known/hubble-contacts-openid-configuration.json
+- name: shopify-oauth-authorization-server
+  type: oauth2
+  metadata: https://account.hubblecontacts.com/.well-known/oauth-authorization-server
+  standard: RFC 8414
+  issuer: https://shopify.com/authentication/15165228
+  flows:
+  - flow: authorizationCode
+    authorizationUrl: https://shopify.com/authentication/15165228/oauth/authorize
+    tokenUrl: https://shopify.com/authentication/15165228/oauth/token
+    pkce: S256
+  source: well-known/hubble-contacts-oauth-authorization-server.json
+protected_resources:
+- resource: https://account.hubblecontacts.com
+  standard: RFC 9728
+  metadata: https://account.hubblecontacts.com/.well-known/oauth-protected-resource
+  authorization_servers: ['https://shopify.com/authentication/15165228']
+  bearer_methods_supported: [header]
+  source: well-known/hubble-contacts-oauth-protected-resource.json
+- name: shopify-storefront-customer-access-token
+  type: http
+  scheme: bearer-like custom token
+  surface: Storefront GraphQL
+  issued_by: 'mutation customerAccessTokenCreate(input: {email, password})'
+  renewed_by: customerAccessTokenRenew
+  revoked_by: customerAccessTokenDelete
+  passed_as: 'customerAccessToken argument on customer-scoped fields and cart mutations'
+  applies_to: 'Customer-scoped reads/writes on the Storefront GraphQL surface (customer profile, addresses, orders)'
+  source: graphql/hubble-contacts-storefront.graphql
+  note: >-
+    Found in round 2. Distinct from the OIDC customer-accounts issuer above: this is
+    the legacy Storefront-API token exchange, which Shopify is steering to the
+    Customer Account API. Anonymous callers reach everything else on the surface.
+surfaces:
+- surface: Storefront GraphQL
+  base: 'https://account.hubblecontacts.com/api/{version}/graphql.json'
+  auth: none
+  observed: >-
+    Round 2. POST with no X-Shopify-Storefront-Access-Token and no bearer token
+    returned HTTP 200 for a full introspection query (416 types) and for real data
+    queries (shop { name } returned "Hubble Contacts"). The server labelled the call
+    graphql;desc="storefront/query/anonymous". Only customer-scoped fields require a
+    customerAccessToken. This is the most open surface on the property and it is
+    documented nowhere by Hubble.
+- surface: Storefront Product JSON
+  base: https://account.hubblecontacts.com
+  auth: none
+  observed: >-
+    GET /products.json, /products/{handle}.json, /collections/{handle}/products.json
+    and /search all return HTTP 200 with no credentials.
+- surface: UCP Commerce MCP
+  base: https://account.hubblecontacts.com/api/ucp/mcp
+  auth: ucp-agent-profile
+  observed: >-
+    Anonymous JSON-RPC returns HTTP 422 / -32001 invalid_profile_url. The gate is a
+    registered UCP agent profile URI rather than an OAuth bearer challenge; no
+    WWW-Authenticate header was returned. Buyer-side payment is separately gated on
+    explicit human approval per Hubble's /agents.md.
+- surface: Marketing site
+  base: https://www.hubblecontacts.com
+  auth: none
+  observed: No auth-bearing API surface; no /.well-known/ documents served.
+x-evidence:
+  fetched: '2026-08-04'
+  probes:
+  - {url: 'https://account.hubblecontacts.com/.well-known/openid-configuration', http_status: 200}
+  - {url: 'https://account.hubblecontacts.com/.well-known/oauth-authorization-server', http_status: 200}
+  - {url: 'https://account.hubblecontacts.com/.well-known/oauth-protected-resource', http_status: 200}
+  - {url: 'https://account.hubblecontacts.com/api/ucp/mcp', method: POST, http_status: 422}

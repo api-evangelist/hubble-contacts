@@ -1,0 +1,76 @@
+generated: '2026-08-04'
+method: searched
+source: https://github.com/hubblecontacts/Doctor_ECP_API_Tests
+notes: >-
+  Hubble Contacts publishes one machine-readable API collection of its own: a Postman
+  Collection v2.1.0 in its public GitHub organization, covering an internal "Doctor /
+  ECP" (eye care professional) API — Devise-style REST authentication for doctors and
+  customers plus a GraphQL surface for products, shipping addresses and orders. This
+  is the only artifact anywhere on Hubble's public property that was AUTHORED BY
+  HUBBLE rather than provided by the Shopify platform.
+
+  It is captured verbatim, but read the status block before treating it as a live
+  contract: the collection's only environment pins baseURL to http://localhost:3000/,
+  the repo has not been touched since November 2021, and every path in it returns 404
+  on api.hubblecontacts.com today. It documents a real API that is not publicly
+  reachable.
+collections:
+- name: Doctor_ECP
+  file: hubble-contacts-doctor-ecp.postman_collection.json
+  format: Postman Collection v2.1.0
+  schema: https://schema.getpostman.com/json/collection/v2.1.0/collection.json
+  postman_id: 01520319-9d95-4b73-b316-50542b71e245
+  repo: https://github.com/hubblecontacts/Doctor_ECP_API_Tests
+  repo_created: '2021-11-15'
+  repo_last_push: '2021-11-15'
+  license: none declared
+  runner: newman (a newman/ directory of run reports sits beside the collection)
+  requests: 43
+  status: archived-local-only
+  status_evidence: >-
+    The published environment file (local_env.json) sets the single variable
+    baseURL to http://localhost:3000/. No production host is named anywhere in the
+    repo. GET /api/v1/doctors/, /api/v1/customers, /api/v1/doctors/sign_in and POST
+    /graphql all return HTTP 404 on api.hubblecontacts.com (which serves a
+    login-gated Rails application), and doctor.hubblecontacts.com does not answer.
+  surface:
+    style: REST (Devise session endpoints) + GraphQL
+    rest_endpoints:
+    - POST /api/v1/doctors/sign_up
+    - POST /api/v1/doctors/sign_in
+    - DELETE /api/v1/doctors/sign_out
+    - GET /api/v1/doctors/
+    - POST /api/v1/doctors/connect_bank_account
+    - POST /api/v1/customers/sign_up
+    - POST /api/v1/customers/sign_in
+    - DELETE /api/v1/customers/sign_out
+    - GET /api/v1/customers
+    graphql_endpoint: POST /graphql
+    graphql_operations:
+    - {type: query, name: getProductList, root_field: productList, note: 'Relay connection; nodes carry id, variants, discount, discountCode, price, productStatus'}
+    - {type: mutation, name: shippingAddress, root_field: createShippingAddress}
+    - {type: mutation, name: Checkout, root_field: createOrder, note: 'input attributes shippingAddressId, orderType (SINGLE_PURCHASE), doctorId, orderItems[{productId, productVariantId, quantity}]'}
+    - {type: query, name: DoctorHistory, root_field: doctorOrders}
+    - {type: query, name: customerHistory, root_field: customerOrders}
+    - {type: query, name: getCustomerShippingAdd, root_field: customerShippingAddresses}
+    auth: bearer token issued by the sign_in endpoints
+  content_note: >-
+    Saved exactly as Hubble published it. Request bodies contain the authors' own test
+    fixtures (placeholder emails such as bob@gmail.com and a sample shipping address);
+    no live tokens, keys or bearer credentials are present in the file.
+what_this_is_not:
+  - Not a collection for the public storefront, UCP/MCP or Storefront GraphQL surfaces — none of those has a published collection.
+  - Not hosted on the Postman network; there is no public Postman workspace for Hubble Contacts.
+searched:
+- {registry: 'Postman public network', query: 'hubble contacts', result: 'no public workspace or collection found'}
+- {registry: 'github.com/hubblecontacts', result: '3 public repos; Doctor_ECP_API_Tests is the only API artifact'}
+x-evidence:
+  fetched: '2026-08-04'
+  probes:
+  - {url: 'https://api.github.com/orgs/hubblecontacts/repos', http_status: 200, repos: 3}
+  - {url: 'https://raw.githubusercontent.com/hubblecontacts/Doctor_ECP_API_Tests/master/Doctor_ECP.json', http_status: 200, bytes: 53850}
+  - {url: 'https://raw.githubusercontent.com/hubblecontacts/Doctor_ECP_API_Tests/master/local_env.json', http_status: 200, baseURL: 'http://localhost:3000/'}
+  - {url: 'https://api.hubblecontacts.com/api/v1/doctors/', http_status: 404}
+  - {url: 'https://api.hubblecontacts.com/api/v1/customers', http_status: 404}
+  - {url: 'https://api.hubblecontacts.com/graphql', method: POST, http_status: 404}
+  - {url: 'https://api.hubblecontacts.com/docs', http_status: 200, note: 'Rails application login page, not API documentation'}

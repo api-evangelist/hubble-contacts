@@ -1,0 +1,73 @@
+generated: '2026-08-04'
+method: searched
+source: https://account.hubblecontacts.com/.well-known/ucp
+notes: >-
+  Hubble Contacts publishes no versioning policy, deprecation policy, SLA or status
+  page of its own. The only versioning signal on its public surface is the dated UCP
+  protocol version pinning in the store's own /.well-known/ucp document, which names
+  the current stable version and one prior version it still supports. Recorded as
+  observed; no StatusPage or Deprecation pointer is emitted because neither exists.
+versioning:
+  scheme: date-versioned protocol negotiation
+  current: '2026-04-08'
+  supported:
+  - version: '2026-04-08'
+    label: latest stable
+    profile: https://hubble-prod.myshopify.com/.well-known/ucp/2026-04-08
+  - version: '2026-01-23'
+    profile: https://hubble-prod.myshopify.com/.well-known/ucp/2026-01-23
+  docs: https://account.hubblecontacts.com/agents.md
+  note: >-
+    Version negotiation is a property of the UCP/Shopify platform, not a Hubble-authored
+    policy. Capability entries under dev.ucp.shopping.fulfillment and
+    dev.ucp.shopping.discount declare requires.protocol.min = 2026-04-08.
+graphql_versioning:
+  surface: https://account.hubblecontacts.com/api/{version}/graphql.json
+  scheme: quarterly date versions in the request path
+  observed_via: 'anonymous query { publicApiVersions { handle displayName supported } }'
+  supported: ['2025-10', '2026-01', '2026-04', '2026-07']
+  latest: '2026-07'
+  release_candidate: '2026-10'
+  unsupported: ['2026-10', 'unstable']
+  response_header: 'x-shopify-api-version: 2026-01'
+  note: >-
+    Found in round 2. This is the only machine-readable version-support window on the
+    property: the endpoint itself will tell an unauthenticated caller which versions
+    are still supported. It is a Shopify platform property surfaced on Hubble's host,
+    not a Hubble-authored policy, which is why no Deprecation pointer is emitted in
+    apis.yml.
+deprecation:
+  policy_url: null
+  sunset_header: false
+  evidence: >-
+    No deprecation or sunset policy is published on any Hubble host; no Deprecation or
+    Sunset headers were observed on the storefront or MCP responses.
+  field_level_signalling:
+    surface: Storefront GraphQL
+    mechanism: '@deprecated(reason: "...") directives in the SDL'
+    count: 55
+    examples:
+    - 'Use `cost` instead.'
+    - 'Use `sourceDiscountApplication` instead.'
+    - 'Use `authorV2` instead.'
+    note: >-
+      The live schema deprecates 55 fields with machine-readable reason strings, so an
+      agent CAN detect deprecation on this surface even though no policy page exists.
+      Recorded as observed; still not a published provider policy.
+sla:
+  url: null
+  uptime_target: null
+status_page: null
+status_page_evidence: >-
+  status.hubblecontacts.com does not resolve (NXDOMAIN); no status or uptime page is
+  linked from the marketing site, the storefront, /llms.txt or /agents.md.
+changelog: null
+changelog_evidence: No dated API or agent-surface changelog is published.
+deprecated_operations: []
+x-evidence:
+  fetched: '2026-08-04'
+  probes:
+  - {url: 'https://account.hubblecontacts.com/.well-known/ucp', http_status: 200}
+  - {host: status.hubblecontacts.com, dns: NXDOMAIN}
+  - {url: 'https://account.hubblecontacts.com/api/2026-01/graphql.json', method: POST, query: publicApiVersions, http_status: 200}
+  - {host: developer.hubblecontacts.com, dns: NXDOMAIN}

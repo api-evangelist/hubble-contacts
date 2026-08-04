@@ -1,0 +1,186 @@
+generated: '2026-08-04'
+method: probed
+source: https://account.hubblecontacts.com/api/2026-01/graphql.json
+notes: >-
+  Round 1 of this pipeline recorded "no GraphQL" after probing /graphql on
+  api.hubblecontacts.com (404). That was the wrong host and the wrong path. The
+  Shopify Storefront GraphQL API is served on Hubble's OWN storefront host at
+  /api/{version}/graphql.json, it answers ANONYMOUSLY — no
+  X-Shopify-Storefront-Access-Token was sent on any probe below — and full
+  introspection is open. That makes it the largest machine-readable contract Hubble
+  Contacts exposes, and the only one on the whole property whose complete schema can
+  be read without registering anything. The SDL beside this file was printed from a
+  live introspection response, not from Shopify's published documentation.
+endpoint:
+  url: https://account.hubblecontacts.com/api/2026-01/graphql.json
+  url_pattern: https://account.hubblecontacts.com/api/{version}/graphql.json
+  alternate_host: https://hubble-prod.myshopify.com/api/{version}/graphql.json
+  method: POST
+  content_type: application/json
+  auth: none
+  auth_note: >-
+    Shopify Storefront API access normally requires an X-Shopify-Storefront-Access-Token
+    header. On this store the endpoint answered unauthenticated introspection AND
+    unauthenticated data queries with HTTP 200; the response server-timing header
+    labels the call graphql;desc="storefront/query/anonymous". Anonymous access is
+    read-scoped storefront data — the same class of data the public storefront renders.
+  cors: 'access-control-allow-origin: *'
+  platform: Shopify
+  first_party: false
+  first_party_note: >-
+    Served from Hubble Contacts' own host under Hubble's own domain, but the schema is
+    the Shopify Storefront API contract, not a Hubble-authored one. Hubble does not
+    link to it from /agents.md, /llms.txt or any page on hubblecontacts.com — it is
+    undocumented-but-live on their property.
+schema:
+  file: hubble-contacts-storefront.graphql
+  format: GraphQL SDL
+  printed_from: live introspection response (2026-08-04)
+  introspection: open
+  api_version: '2026-01'
+  types_total: 416
+  types_by_kind:
+    OBJECT: 262
+    ENUM: 62
+    INPUT_OBJECT: 53
+    UNION: 16
+    SCALAR: 13
+    INTERFACE: 10
+  query_type: QueryRoot
+  mutation_type: Mutation
+  subscription_type: null
+  query_fields: 35
+  mutation_fields: 41
+  deprecated_fields: 55
+  deprecated_note: >-
+    55 fields carry @deprecated with a machine-readable reason string (e.g. "Use
+    `cost` instead."), so the contract itself signals deprecation at field level even
+    though Hubble publishes no deprecation policy page.
+root_queries:
+- article
+- articles
+- blog
+- blogByHandle
+- blogs
+- cart
+- cartCompletionAttempt
+- collection
+- collectionByHandle
+- collections
+- customer
+- localization
+- locations
+- menu
+- metaobject
+- metaobjects
+- node
+- nodes
+- page
+- pageByHandle
+- pages
+- paymentSettings
+- predictiveSearch
+- product
+- productByHandle
+- productRecommendations
+- productTags
+- productTypes
+- products
+- publicApiVersions
+- search
+- shop
+- shopPayInstallmentsPricing
+- sitemap
+- urlRedirects
+root_mutations:
+- cartAttributesUpdate
+- cartBillingAddressUpdate
+- cartBuyerIdentityUpdate
+- cartClone
+- cartCreate
+- cartDeliveryAddressesAdd
+- cartDeliveryAddressesRemove
+- cartDeliveryAddressesReplace
+- cartDeliveryAddressesUpdate
+- cartDiscountCodesUpdate
+- cartGiftCardCodesAdd
+- cartGiftCardCodesRemove
+- cartGiftCardCodesUpdate
+- cartLinesAdd
+- cartLinesRemove
+- cartLinesUpdate
+- cartMetafieldDelete
+- cartMetafieldsSet
+- cartNoteUpdate
+- cartPaymentUpdate
+- cartPrepareForCompletion
+- cartRemovePersonalData
+- cartSelectedDeliveryOptionsUpdate
+- cartSubmitForCompletion
+- customerAccessTokenCreate
+- customerAccessTokenCreateWithMultipass
+- customerAccessTokenDelete
+- customerAccessTokenRenew
+- customerActivate
+- customerActivateByUrl
+- customerAddressCreate
+- customerAddressDelete
+- customerAddressUpdate
+- customerCreate
+- customerDefaultAddressUpdate
+- customerRecover
+- customerReset
+- customerResetByUrl
+- customerUpdate
+- shopPayPaymentRequestSessionCreate
+- shopPayPaymentRequestSessionSubmit
+versions:
+  scheme: quarterly date versions in the request path
+  observed_via: 'query { publicApiVersions { handle displayName supported } }'
+  supported:
+  - '2025-10'
+  - '2026-01'
+  - '2026-04'
+  - '2026-07'
+  latest: '2026-07'
+  release_candidate: '2026-10'
+  unsupported:
+  - '2026-10'
+  - unstable
+  note: >-
+    Version support is a Shopify platform property surfaced on Hubble's host, not a
+    Hubble-published policy. Recorded here because it is the only machine-readable
+    version-support window anywhere on the property.
+pagination:
+  style: relay-cursor-connections
+  params: [first, last, after, before]
+  response_fields: [edges, node, cursor, pageInfo.hasNextPage, pageInfo.hasPreviousPage, pageInfo.startCursor, pageInfo.endCursor]
+  max_page_size: 250
+  observed: 'products(first:250) returned 250 edges in one response'
+rate_limiting:
+  model: query cost / complexity budget
+  request_field: extensions.cost.requestedQueryCost
+  response_headers: [shopify-complexity-score, shopify-complexity-score-v2]
+  observed:
+  - {query: '{shop{name}}', requestedQueryCost: 1, complexity_v2: 8}
+  - {query: 'products(first:250)', requestedQueryCost: 23, complexity_v2: 78}
+errors:
+  envelope: GraphQL errors[] with extensions.code
+  fields: ['errors[].message', 'errors[].locations', 'errors[].path', 'errors[].extensions.code', 'errors[].extensions.typeName', 'errors[].extensions.fieldName']
+  observed_example:
+    code: undefinedField
+    message: "Field 'nonexistentField' doesn't exist on type 'Shop'"
+  see: ../errors/hubble-contacts-problem-types.yml
+documentation:
+  provider_published: false
+  platform_reference: https://shopify.dev/docs/api/storefront
+x-evidence:
+  fetched: '2026-08-04'
+  probes:
+  - {url: 'https://account.hubblecontacts.com/api/2025-01/graphql.json', method: POST, body: '{__schema{queryType{name}}}', http_status: 200}
+  - {url: 'https://account.hubblecontacts.com/api/2026-01/graphql.json', method: POST, body: full introspection query, http_status: 200, bytes: 759244}
+  - {url: 'https://account.hubblecontacts.com/api/unstable/graphql.json', method: POST, http_status: 200}
+  - {url: 'https://hubble-prod.myshopify.com/api/2026-01/graphql.json', method: POST, http_status: 200}
+  - {url: 'https://account.hubblecontacts.com/api/2026-01/graphql.json', method: POST, query: 'shop{name} products(first:2)', http_status: 200, note: 'returned shop name "Hubble Contacts" and real product handles with no credentials'}
+  - {url: 'https://api.hubblecontacts.com/graphql', method: POST, http_status: 404, note: 'the round-1 probe path; wrong host'}
+  response_headers_observed: [x-shopify-api-version, shopify-complexity-score, shopify-complexity-score-v2, x-request-id, server-timing, access-control-allow-origin, content-security-policy, x-frame-options]
