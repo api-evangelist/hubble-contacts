@@ -11,10 +11,9 @@ server:
   discovery: https://account.hubblecontacts.com/.well-known/ucp
   platform: Shopify (UCP native)
   first_party: false
-  first_party_note: >-
-    The endpoint is served from Hubble Contacts' own host and advertised by Hubble's
-    own /agents.md and /llms.txt, but the UCP/MCP implementation is provided by the
-    Shopify platform rather than authored by Hubble.
+  first_party_note: The endpoint is served from Hubble Contacts' own host and advertised by Hubble's own
+    /agents.md and /llms.txt, but the UCP/MCP implementation is provided by the Shopify platform rather
+    than authored by Hubble.
 protocol:
   name: Universal Commerce Protocol
   spec: https://ucp.dev/2026-04-08/specification/overview/
@@ -42,89 +41,116 @@ introspection:
     jsonrpc_error_code: -32001
     message: UCP discovery failed
     data_code: invalid_profile_url
-  note: >-
-    POST {"jsonrpc":"2.0","id":1,"method":"tools/list"} returns HTTP 422 with
-    invalid_profile_url ("Missing profile uri"). Live tool input schemas require a
-    registered UCP agent profile, so the tool list below is taken from the two
-    published, unauthenticated sources instead: Hubble's own /agents.md flow and the
-    canonical UCP Shopping OpenRPC document the store's /.well-known/ucp points at.
-    Names and summaries are real; per-tool input schemas were NOT observed and are
-    not asserted here.
+  note: 'POST {"jsonrpc":"2.0","id":1,"method":"tools/list"} returns HTTP 422 with invalid_profile_url
+    ("Missing profile uri"). Live tool input schemas require a registered UCP agent profile, so the tool
+    list below is taken from the two published, unauthenticated sources instead: Hubble''s own /agents.md
+    flow and the canonical UCP Shopping OpenRPC document the store''s /.well-known/ucp points at. Names
+    and summaries are real; per-tool input schemas were NOT observed and are not asserted here.'
 tools:
 - name: search_catalog
   description: Search for products in the catalog
-  params: [meta, catalog]
+  params:
+  - meta
+  - catalog
   source: https://ucp.dev/2026-04-08/services/shopping/mcp.openrpc.json
   named_in_provider_docs: true
 - name: lookup_catalog
   description: Batch lookup products or variants by identifier
-  params: [meta, catalog]
+  params:
+  - meta
+  - catalog
   source: https://ucp.dev/2026-04-08/services/shopping/mcp.openrpc.json
   named_in_provider_docs: false
 - name: get_product
   description: Get product details
-  params: [meta, catalog]
+  params:
+  - meta
+  - catalog
   source: https://ucp.dev/2026-04-08/services/shopping/mcp.openrpc.json
   named_in_provider_docs: false
 - name: create_cart
   description: Create a cart
-  params: [meta, cart]
+  params:
+  - meta
+  - cart
   source: https://ucp.dev/2026-04-08/services/shopping/mcp.openrpc.json
   named_in_provider_docs: true
 - name: get_cart
   description: Get cart
-  params: [meta, id]
+  params:
+  - meta
+  - id
   source: https://ucp.dev/2026-04-08/services/shopping/mcp.openrpc.json
   named_in_provider_docs: false
 - name: update_cart
   description: Update cart
-  params: [meta, id, cart]
+  params:
+  - meta
+  - id
+  - cart
   source: https://ucp.dev/2026-04-08/services/shopping/mcp.openrpc.json
   named_in_provider_docs: false
 - name: cancel_cart
   description: Cancel cart
-  params: [meta, id]
+  params:
+  - meta
+  - id
   source: https://ucp.dev/2026-04-08/services/shopping/mcp.openrpc.json
   named_in_provider_docs: false
 - name: create_checkout
   description: Create a checkout
-  params: [meta, checkout]
+  params:
+  - meta
+  - checkout
   source: https://ucp.dev/2026-04-08/services/shopping/mcp.openrpc.json
   named_in_provider_docs: true
 - name: get_checkout
   description: Get checkout
-  params: [meta, id]
+  params:
+  - meta
+  - id
   source: https://ucp.dev/2026-04-08/services/shopping/mcp.openrpc.json
   named_in_provider_docs: false
 - name: update_checkout
   description: Update checkout
-  params: [meta, id, checkout]
+  params:
+  - meta
+  - id
+  - checkout
   source: https://ucp.dev/2026-04-08/services/shopping/mcp.openrpc.json
   named_in_provider_docs: true
 - name: complete_checkout
   description: Complete checkout and place order
-  params: [meta, id, checkout]
+  params:
+  - meta
+  - id
+  - checkout
   source: https://ucp.dev/2026-04-08/services/shopping/mcp.openrpc.json
   named_in_provider_docs: true
 - name: cancel_checkout
   description: Cancel checkout
-  params: [meta, id]
+  params:
+  - meta
+  - id
   source: https://ucp.dev/2026-04-08/services/shopping/mcp.openrpc.json
   named_in_provider_docs: false
 - name: get_order
   description: Get order
-  params: [meta, id]
+  params:
+  - meta
+  - id
   source: https://ucp.dev/2026-04-08/services/shopping/mcp.openrpc.json
   named_in_provider_docs: false
 rules:
   human_approval_required: true
-  human_approval_note: >-
-    Hubble's /agents.md states agents must not complete payment without explicit
-    contemporaneous buyer consent, and directs agents that cannot obtain it to route
-    the purchase through the Shop skill (https://shop.app/SKILL.md) and Shop Pay.
+  human_approval_note: Hubble's /agents.md states agents must not complete payment without explicit contemporaneous
+    buyer consent, and directs agents that cannot obtain it to route the purchase through the Shop skill
+    (https://shop.app/SKILL.md) and Shop Pay.
   rate_limited: true
   rate_limit_note: Rate limited per IP; agents are told to back off on HTTP 429.
-  buyer_context: [context.address_country, context.currency]
+  buyer_context:
+  - context.address_country
+  - context.currency
 x-evidence:
   fetched: '2026-08-04'
   probes:
@@ -140,3 +166,11 @@ x-evidence:
     http_status: 422
   - url: https://ucp.dev/2026-04-08/services/shopping/mcp.openrpc.json
     http_status: 200
+deployment:
+  mode: remote
+  endpoint: https://account.hubblecontacts.com/api/ucp/mcp
+  verified: probed
+  probe: live
+  tools: 13
+  checked: '2026-08-12'
+  source: catalog MCP census
