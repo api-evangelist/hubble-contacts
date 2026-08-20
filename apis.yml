@@ -43,6 +43,18 @@ tags:
 - Health
 - Vision Care
 - Contact Lenses
+- Subscription
+- Agentic Commerce
+- MCP
+- Shopify
+- GraphQL
+tags_raw:
+- Company
+- E-Commerce
+- Retail
+- Health
+- Vision Care
+- Contact Lenses
 - Subscriptions
 - Agentic Commerce
 - Model Context Protocol
@@ -63,6 +75,12 @@ apis:
   humanURL: https://account.hubblecontacts.com/agents.md
   baseURL: https://account.hubblecontacts.com/api/ucp/mcp
   tags:
+  - Agentic Commerce
+  - MCP
+  - Universal Commerce Protocol
+  - Checkout
+  - Catalog
+  tags_raw:
   - Agentic Commerce
   - Model Context Protocol
   - Universal Commerce Protocol
@@ -87,6 +105,11 @@ apis:
   humanURL: https://account.hubblecontacts.com/collections/all
   baseURL: https://account.hubblecontacts.com
   tags:
+  - Catalog
+  - Product
+  - E-Commerce
+  - Read Only
+  tags_raw:
   - Catalog
   - Products
   - E-Commerce
@@ -113,6 +136,13 @@ apis:
   humanURL: https://shopify.dev/docs/api/storefront
   baseURL: https://account.hubblecontacts.com/api/2026-01/graphql.json
   tags:
+  - GraphQL
+  - Catalog
+  - Product
+  - Subscription
+  - Cart
+  - E-Commerce
+  tags_raw:
   - GraphQL
   - Catalog
   - Products
