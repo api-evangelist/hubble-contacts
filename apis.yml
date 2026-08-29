@@ -14,6 +14,17 @@ description: 'Hubble Contacts is a New York-based direct-to-consumer vision care
   JSON endpoints. Undocumented but wide open beside them sits the full Shopify
   Storefront GraphQL API on the same host — 416 types, anonymous, introspectable, and
   the only place the company''s subscription selling plans are modelled.'
+deliveryModel:
+  model: saas
+  open_source: false
+  commercial: true
+  callable_host: false
+  label: Hosted service · you call their endpoint
+  confidence: medium
+  source:
+  - pricing
+  generated: '2026-08-28'
+  method: derived
 image: https://hubblecontacts.com/static/Hubble-Contacts-Homepage-Inset-Image-mobile.webp
 url: https://raw.githubusercontent.com/api-evangelist/hubble-contacts/refs/heads/main/apis.yml
 x-type: company
