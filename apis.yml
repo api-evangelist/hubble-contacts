@@ -25,6 +25,20 @@ deliveryModel:
   - pricing
   generated: '2026-08-28'
   method: derived
+accessModel:
+  pricing: unknown
+  onboarding: self-serve
+  trial: false
+  try_now: false
+  public: false
+  label: Self-serve signup
+  confidence: medium
+  source:
+  - authentication
+  - scopes
+  - security
+  generated: '2026-09-02'
+  method: derived
 image: https://hubblecontacts.com/static/Hubble-Contacts-Homepage-Inset-Image-mobile.webp
 url: https://raw.githubusercontent.com/api-evangelist/hubble-contacts/refs/heads/main/apis.yml
 x-type: company
