@@ -110,6 +110,9 @@ apis:
     url: mcp/hubble-contacts-tool-crosswalk.yml
   - type: LLMsTxt
     url: llms/hubble-contacts-llms.txt
+  x-surface: platform-generated
+  x-platform: shopify
+  x-platform-surface: ucp
 - aid: hubble-contacts:hubble-contacts-storefront-json
   name: Hubble Contacts Storefront Product JSON
   description: 'Unauthenticated read-only JSON over the Hubble Contacts storefront catalog, documented
@@ -132,6 +135,9 @@ apis:
   properties:
   - type: DataModel
     url: data-model/hubble-contacts-data-model.yml
+  x-surface: platform-generated
+  x-platform: shopify
+  x-platform-surface: storefront-json
 - aid: hubble-contacts:hubble-contacts-storefront-graphql
   name: Hubble Contacts Storefront GraphQL API
   description: 'The Shopify Storefront GraphQL API as served on Hubble Contacts'' own host at /api/{version}/graphql.json.
@@ -170,6 +176,9 @@ apis:
     url: data-model/hubble-contacts-data-model.yml
   - type: AgentSkill
     url: skills/hubble-contacts-graphql-storefront.md
+  x-surface: platform-generated
+  x-platform: shopify
+  x-platform-surface: storefront-graphql
 maintainers:
 - FN: Kin Lane
   email: kin@apievangelist.com
